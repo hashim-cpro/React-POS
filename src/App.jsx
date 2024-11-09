@@ -1,5 +1,10 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  BrowserRouter,
+} from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "./store";
 import Layout from "./components/Layout";
@@ -12,7 +17,7 @@ import Expenses from "./pages/Expenses";
 export default function App() {
   return (
     <Provider store={store}>
-      <Router>
+      <BrowserRouter basename={import.meta.env.BASE_URL}>
         <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={<Dashboard />} />
@@ -22,7 +27,7 @@ export default function App() {
             <Route path="/expenses" element={<Expenses />} />
           </Route>
         </Routes>
-      </Router>
+      </BrowserRouter>
     </Provider>
   );
 }
