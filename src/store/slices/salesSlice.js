@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   sales: [],
@@ -8,12 +8,12 @@ const initialState = {
 const calculateTodayTotal = (sales) => {
   const today = new Date().toDateString();
   return sales
-    .filter(sale => new Date(sale.date).toDateString() === today)
+    .filter((sale) => new Date(sale.date).toDateString() === today)
     .reduce((sum, sale) => sum + sale.total, 0);
 };
 
 const salesSlice = createSlice({
-  name: 'sales',
+  name: "sales",
   initialState,
   reducers: {
     addSale: (state, action) => {

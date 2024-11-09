@@ -1,35 +1,39 @@
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useState } from "react";
+import { useSelector } from "react-redux";
 
 function InventoryTable({ onEdit, searchTerm }) {
   const { products } = useSelector((state) => state.inventory);
-  const [sortField, setSortField] = useState('name');
-  const [sortDirection, setSortDirection] = useState('asc');
+  const [sortField, setSortField] = useState("name");
+  const [sortDirection, setSortDirection] = useState("asc");
 
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm?.toLowerCase() || '') ||
-    product.sku.toLowerCase().includes(searchTerm?.toLowerCase() || '') ||
-    product.category.toLowerCase().includes(searchTerm?.toLowerCase() || '')
+  const filteredProducts = products.filter(
+    (product) =>
+      product.name.toLowerCase().includes(searchTerm?.toLowerCase() || "") ||
+      product.sku.toLowerCase().includes(searchTerm?.toLowerCase() || "") ||
+      product.category.toLowerCase().includes(searchTerm?.toLowerCase() || "")
   );
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     const aValue = a[sortField]?.toString().toLowerCase();
     const bValue = b[sortField]?.toString().toLowerCase();
-    return sortDirection === 'asc' 
+    return sortDirection === "asc"
       ? aValue?.localeCompare(bValue)
       : bValue?.localeCompare(aValue);
   });
 
   const handleSort = (field) => {
-    setSortDirection(sortField === field && sortDirection === 'asc' ? 'desc' : 'asc');
+    setSortDirection(
+      sortField === field && sortDirection === "asc" ? "desc" : "asc"
+    );
     setSortField(field);
   };
 
   const getStockStatus = (product) => {
     const { quantity, minStockLevel = 5 } = product;
-    if (quantity <= 0) return { color: 'red', text: 'Out of Stock' };
-    if (quantity <= minStockLevel) return { color: 'yellow', text: 'Low Stock' };
-    return { color: 'green', text: 'In Stock' };
+    if (quantity <= 0) return { color: "red", text: "Out of Stock" };
+    if (quantity <= minStockLevel)
+      return { color: "yellow", text: "Low Stock" };
+    return { color: "green", text: "In Stock" };
   };
 
   return (
@@ -38,34 +42,37 @@ function InventoryTable({ onEdit, searchTerm }) {
         <table className="min-w-full divide-y divide-gray-300">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">
+              <th
+                scope="col"
+                className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900"
+              >
                 Product
               </th>
-              <th 
-                scope="col" 
+              <th
+                scope="col"
                 className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer"
-                onClick={() => handleSort('name')}
+                onClick={() => handleSort("name")}
               >
                 Details
               </th>
-              <th 
-                scope="col" 
+              <th
+                scope="col"
                 className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hidden md:table-cell"
-                onClick={() => handleSort('sku')}
+                onClick={() => handleSort("sku")}
               >
                 SKU
               </th>
-              <th 
-                scope="col" 
+              <th
+                scope="col"
                 className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer"
-                onClick={() => handleSort('price')}
+                onClick={() => handleSort("price")}
               >
                 Price
               </th>
-              <th 
-                scope="col" 
+              <th
+                scope="col"
                 className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer"
-                onClick={() => handleSort('quantity')}
+                onClick={() => handleSort("quantity")}
               >
                 Stock Status
               </th>
@@ -82,10 +89,12 @@ function InventoryTable({ onEdit, searchTerm }) {
                   <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm">
                     <div className="flex items-center">
                       <div className="h-10 w-10 flex-shrink-0">
-                        <img 
-                          className="h-10 w-10 rounded-full object-cover" 
-                          src={product.image || 'https://via.placeholder.com/40'} 
-                          alt="" 
+                        <img
+                          className="h-10 w-10 rounded-full object-cover"
+                          src={
+                            product.image || "https://via.placeholder.com/40"
+                          }
+                          alt=""
                         />
                       </div>
                     </div>
@@ -101,13 +110,15 @@ function InventoryTable({ onEdit, searchTerm }) {
                     ${product.price.toFixed(2)}
                   </td>
                   <td className="whitespace-nowrap px-3 py-4 text-sm">
-                    <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                      stockStatus.color === 'green' 
-                        ? 'bg-green-100 text-green-800'
-                        : stockStatus.color === 'yellow'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
+                    <span
+                      className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                        stockStatus.color === "green"
+                          ? "bg-green-100 text-green-800"
+                          : stockStatus.color === "yellow"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
                       {stockStatus.text} ({product.quantity})
                     </span>
                     {product.quantity <= product.minStockLevel && (
@@ -129,7 +140,10 @@ function InventoryTable({ onEdit, searchTerm }) {
             })}
             {sortedProducts.length === 0 && (
               <tr>
-                <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
+                <td
+                  colSpan="6"
+                  className="px-6 py-4 text-center text-sm text-gray-500"
+                >
                   No products found
                 </td>
               </tr>

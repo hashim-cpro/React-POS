@@ -12,7 +12,9 @@ function Dashboard() {
   const { sales } = useSelector((state) => state.sales);
   const { purchases } = useSelector((state) => state.purchases);
 
-  const lowStockItems = products.filter((p) => p.quantity <= (p.minStockLevel || 5)).length;
+  const lowStockItems = products.filter(
+    (p) => p.quantity <= (p.minStockLevel || 5)
+  ).length;
   const totalItems = products.reduce((sum, p) => sum + p.quantity, 0);
 
   const lowStockProducts = products
@@ -112,19 +114,25 @@ function Dashboard() {
             <div className="p-4">
               <div className="space-y-4">
                 {lowStockProducts.map((product) => (
-                  <div key={product.id} className="flex items-center justify-between p-2 bg-yellow-50 rounded-lg">
+                  <div
+                    key={product.id}
+                    className="flex items-center justify-between p-2 bg-yellow-50 rounded-lg"
+                  >
                     <div>
                       <p className="font-medium">{product.name}</p>
                       <p className="text-sm text-gray-500">
-                        Current: {product.quantity} / Min: {product.minStockLevel || 5}
+                        Current: {product.quantity} / Min:{" "}
+                        {product.minStockLevel || 5}
                       </p>
                     </div>
-                    <span className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                      product.quantity === 0
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {product.quantity === 0 ? 'Out of Stock' : 'Low Stock'}
+                    <span
+                      className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
+                        product.quantity === 0
+                          ? "bg-red-100 text-red-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
+                      {product.quantity === 0 ? "Out of Stock" : "Low Stock"}
                     </span>
                   </div>
                 ))}
@@ -144,13 +152,19 @@ function Dashboard() {
 
 function DashboardCard({ title, value, icon, alert }) {
   return (
-    <div className={`bg-white rounded-lg shadow p-6 ${alert ? 'ring-2 ring-yellow-400' : ''}`}>
+    <div
+      className={`bg-white rounded-lg shadow p-6 ${
+        alert ? "ring-2 ring-yellow-400" : ""
+      }`}
+    >
       <div className="flex items-center justify-between">
         <div>
           <p className="text-gray-500 text-sm">{title}</p>
           <p className="text-2xl font-bold mt-1">{value}</p>
         </div>
-        <div className={`${alert ? 'text-yellow-400' : 'text-gray-400'}`}>{icon}</div>
+        <div className={`${alert ? "text-yellow-400" : "text-gray-400"}`}>
+          {icon}
+        </div>
       </div>
     </div>
   );
