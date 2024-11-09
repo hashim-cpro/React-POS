@@ -1,38 +1,39 @@
-import { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { format, startOfMonth, endOfMonth, parseISO } from 'date-fns';
-import { utils, writeFile } from 'xlsx';
-import { addExpense, deleteExpense } from '../store/slices/expenseSlice';
-import ExpenseModal from '../components/ExpenseModal';
-import ExpenseChart from '../components/ExpenseChart';
-import { 
-  ArrowUpIcon, 
+import { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { format, startOfMonth, endOfMonth, parseISO } from "date-fns";
+// import { utils, writeFile } from 'xlsx'; //slsx has some severe security vulnerabilities reported!sx
+import { addExpense, deleteExpense } from "../store/slices/expenseSlice";
+import ExpenseModal from "../components/ExpenseModal";
+import ExpenseChart from "../components/ExpenseChart";
+import {
+  ArrowUpIcon,
   ArrowDownIcon,
   FunnelIcon,
-  DocumentArrowDownIcon
-} from '@heroicons/react/24/outline';
+  DocumentArrowDownIcon,
+} from "@heroicons/react/24/outline";
 
 function Expenses() {
   const dispatch = useDispatch();
   const { expenses, categories } = useSelector((state) => state.expenses);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState(null);
-  const [sortField, setSortField] = useState('date');
-  const [sortDirection, setSortDirection] = useState('desc');
-  const [filterCategory, setFilterCategory] = useState('');
-  const [filterMonth, setFilterMonth] = useState(format(new Date(), 'yyyy-MM'));
+  const [sortField, setSortField] = useState("date");
+  const [sortDirection, setSortDirection] = useState("desc");
+  const [filterCategory, setFilterCategory] = useState("");
+  const [filterMonth, setFilterMonth] = useState(format(new Date(), "yyyy-MM"));
 
   const handleSort = (field) => {
     if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
       setSortField(field);
-      setSortDirection('asc');
+      setSortDirection("asc");
     }
   };
 
-  const filteredExpenses = expenses.filter(expense => {
-    const matchesCategory = !filterCategory || expense.category === filterCategory;
+  const filteredExpenses = expenses.filter((expense) => {
+    const matchesCategory =
+      !filterCategory || expense.category === filterCategory;
     const expenseDate = parseISO(expense.date);
     const filterStart = startOfMonth(parseISO(filterMonth));
     const filterEnd = endOfMonth(parseISO(filterMonth));
@@ -43,38 +44,41 @@ function Expenses() {
   const sortedExpenses = [...filteredExpenses].sort((a, b) => {
     let comparison = 0;
     switch (sortField) {
-      case 'date':
+      case "date":
         comparison = new Date(a.date) - new Date(b.date);
         break;
-      case 'amount':
+      case "amount":
         comparison = a.amount - b.amount;
         break;
       default:
         comparison = String(a[sortField]).localeCompare(String(b[sortField]));
     }
-    return sortDirection === 'asc' ? comparison : -comparison;
+    return sortDirection === "asc" ? comparison : -comparison;
   });
 
-  const monthlyTotal = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-  
+  const monthlyTotal = filteredExpenses.reduce(
+    (sum, expense) => sum + expense.amount,
+    0
+  );
+
   const categoryTotals = filteredExpenses.reduce((acc, expense) => {
     acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
     return acc;
   }, {});
 
-  const exportToExcel = () => {
-    const data = sortedExpenses.map(expense => ({
-      Date: format(parseISO(expense.date), 'MMM dd, yyyy'),
-      Category: expense.category,
-      Amount: expense.amount.toFixed(2),
-      Description: expense.description
-    }));
+  // const exportToExcel = () => {
+  //   const data = sortedExpenses.map(expense => ({
+  //     Date: format(parseISO(expense.date), 'MMM dd, yyyy'),
+  //     Category: expense.category,
+  //     Amount: expense.amount.toFixed(2),
+  //     Description: expense.description
+  //   }));
 
-    const ws = utils.json_to_sheet(data);
-    const wb = utils.book_new();
-    utils.book_append_sheet(wb, ws, 'Expenses');
-    writeFile(wb, `expenses_${filterMonth}.xlsx`);
-  };
+  //   const ws = utils.json_to_sheet(data);
+  //   const wb = utils.book_new();
+  //   utils.book_append_sheet(wb, ws, 'Expenses');
+  //   writeFile(wb, `expenses_${filterMonth}.xlsx`);
+  // };
 
   return (
     <div className="space-y-6">
@@ -138,12 +142,14 @@ function Expenses() {
                 className="input"
               >
                 <option value="">All Categories</option>
-                {categories.map(category => (
-                  <option key={category} value={category}>{category}</option>
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
                 ))}
               </select>
             </div>
-            <div className="flex items-end">
+            {/* <div className="flex items-end">
               <button
                 onClick={exportToExcel}
                 className="btn btn-secondary"
@@ -152,7 +158,7 @@ function Expenses() {
                 <DocumentArrowDownIcon className="h-5 w-5" />
                 Export
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -162,35 +168,44 @@ function Expenses() {
               <tr>
                 <th
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('date')}
+                  onClick={() => handleSort("date")}
                 >
                   <div className="flex items-center">
                     Date
-                    {sortField === 'date' && (
-                      sortDirection === 'asc' ? <ArrowUpIcon className="h-4 w-4 ml-1" /> : <ArrowDownIcon className="h-4 w-4 ml-1" />
-                    )}
+                    {sortField === "date" &&
+                      (sortDirection === "asc" ? (
+                        <ArrowUpIcon className="h-4 w-4 ml-1" />
+                      ) : (
+                        <ArrowDownIcon className="h-4 w-4 ml-1" />
+                      ))}
                   </div>
                 </th>
                 <th
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('category')}
+                  onClick={() => handleSort("category")}
                 >
                   <div className="flex items-center">
                     Category
-                    {sortField === 'category' && (
-                      sortDirection === 'asc' ? <ArrowUpIcon className="h-4 w-4 ml-1" /> : <ArrowDownIcon className="h-4 w-4 ml-1" />
-                    )}
+                    {sortField === "category" &&
+                      (sortDirection === "asc" ? (
+                        <ArrowUpIcon className="h-4 w-4 ml-1" />
+                      ) : (
+                        <ArrowDownIcon className="h-4 w-4 ml-1" />
+                      ))}
                   </div>
                 </th>
                 <th
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort('amount')}
+                  onClick={() => handleSort("amount")}
                 >
                   <div className="flex items-center">
                     Amount
-                    {sortField === 'amount' && (
-                      sortDirection === 'asc' ? <ArrowUpIcon className="h-4 w-4 ml-1" /> : <ArrowDownIcon className="h-4 w-4 ml-1" />
-                    )}
+                    {sortField === "amount" &&
+                      (sortDirection === "asc" ? (
+                        <ArrowUpIcon className="h-4 w-4 ml-1" />
+                      ) : (
+                        <ArrowDownIcon className="h-4 w-4 ml-1" />
+                      ))}
                   </div>
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -205,7 +220,7 @@ function Expenses() {
               {sortedExpenses.map((expense) => (
                 <tr key={expense.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {format(parseISO(expense.date), 'MMM dd, yyyy')}
+                    {format(parseISO(expense.date), "MMM dd, yyyy")}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {expense.category}
@@ -237,7 +252,10 @@ function Expenses() {
               ))}
               {sortedExpenses.length === 0 && (
                 <tr>
-                  <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
+                  <td
+                    colSpan="5"
+                    className="px-6 py-4 text-center text-gray-500"
+                  >
                     No expenses found
                   </td>
                 </tr>
