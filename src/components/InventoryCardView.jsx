@@ -1,19 +1,22 @@
-import { useSelector } from 'react-redux';
+import React from "react";
+import { useSelector } from "react-redux";
 
 function InventoryCardView({ onEdit, searchTerm }) {
   const { products } = useSelector((state) => state.inventory);
 
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm?.toLowerCase() || '') ||
-    product.sku.toLowerCase().includes(searchTerm?.toLowerCase() || '') ||
-    product.category.toLowerCase().includes(searchTerm?.toLowerCase() || '')
+  const filteredProducts = products.filter(
+    (product) =>
+      product.name.toLowerCase().includes(searchTerm?.toLowerCase() || "") ||
+      product.sku.toLowerCase().includes(searchTerm?.toLowerCase() || "") ||
+      product.category.toLowerCase().includes(searchTerm?.toLowerCase() || "")
   );
 
   const getStockStatus = (product) => {
     const { quantity, minStockLevel = 5 } = product;
-    if (quantity <= 0) return { color: 'red', text: 'Out of Stock' };
-    if (quantity <= minStockLevel) return { color: 'yellow', text: 'Low Stock' };
-    return { color: 'green', text: 'In Stock' };
+    if (quantity <= 0) return { color: "red", text: "Out of Stock" };
+    if (quantity <= minStockLevel)
+      return { color: "yellow", text: "Low Stock" };
+    return { color: "green", text: "In Stock" };
   };
 
   return (
@@ -21,10 +24,13 @@ function InventoryCardView({ onEdit, searchTerm }) {
       {filteredProducts.map((product) => {
         const stockStatus = getStockStatus(product);
         return (
-          <div key={product.id} className="bg-white rounded-lg shadow overflow-hidden">
+          <div
+            key={product.id}
+            className="bg-white rounded-lg shadow overflow-hidden"
+          >
             <div className="aspect-w-3 aspect-h-2">
               <img
-                src={product.image || 'https://via.placeholder.com/300'}
+                src={product.image || "https://via.placeholder.com/300"}
                 alt={product.name}
                 className="w-full h-48 object-cover"
               />
@@ -33,14 +39,18 @@ function InventoryCardView({ onEdit, searchTerm }) {
               <h3 className="text-lg font-semibold">{product.name}</h3>
               <p className="text-sm text-gray-500">{product.category}</p>
               <div className="mt-2 flex justify-between items-center">
-                <span className="text-lg font-bold">${product.price.toFixed(2)}</span>
-                <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                  stockStatus.color === 'green' 
-                    ? 'bg-green-100 text-green-800'
-                    : stockStatus.color === 'yellow'
-                    ? 'bg-yellow-100 text-yellow-800'
-                    : 'bg-red-100 text-red-800'
-                }`}>
+                <span className="text-lg font-bold">
+                  ${product.price.toFixed(2)}
+                </span>
+                <span
+                  className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                    stockStatus.color === "green"
+                      ? "bg-green-100 text-green-800"
+                      : stockStatus.color === "yellow"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : "bg-red-100 text-red-800"
+                  }`}
+                >
                   {stockStatus.text} ({product.quantity})
                 </span>
               </div>

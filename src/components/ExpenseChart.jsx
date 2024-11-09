@@ -1,16 +1,33 @@
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import React from "react";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Legend,
+  Tooltip,
+} from "recharts";
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#ff7300'];
+const COLORS = [
+  "#0088FE",
+  "#00C49F",
+  "#FFBB28",
+  "#FF8042",
+  "#8884d8",
+  "#82ca9d",
+  "#ffc658",
+  "#ff7300",
+];
 
 function ExpenseChart({ expenses }) {
   const data = expenses.reduce((acc, expense) => {
-    const existingCategory = acc.find(item => item.name === expense.category);
+    const existingCategory = acc.find((item) => item.name === expense.category);
     if (existingCategory) {
       existingCategory.value += expense.amount;
     } else {
       acc.push({
         name: expense.category,
-        value: expense.amount
+        value: expense.amount,
       });
     }
     return acc;
@@ -31,12 +48,13 @@ function ExpenseChart({ expenses }) {
             dataKey="value"
           >
             {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[index % COLORS.length]}
+              />
             ))}
           </Pie>
-          <Tooltip 
-            formatter={(value) => `$${value.toFixed(2)}`}
-          />
+          <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
           <Legend />
         </PieChart>
       </ResponsiveContainer>
