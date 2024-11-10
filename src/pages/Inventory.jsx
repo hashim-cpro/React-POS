@@ -1,4 +1,3 @@
-import React from "react";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { Bars4Icon, Squares2X2Icon } from "@heroicons/react/24/outline";

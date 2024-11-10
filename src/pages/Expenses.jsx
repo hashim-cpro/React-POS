@@ -1,17 +1,11 @@
-import React from "react";
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { format, startOfMonth, endOfMonth, parseISO } from "date-fns";
 // import { utils, writeFile } from 'xlsx'; //slsx has some severe security vulnerabilities reported!sx
-import { addExpense, deleteExpense } from "../store/slices/expenseSlice";
+import { deleteExpense } from "../store/slices/expenseSlice";
 import ExpenseModal from "../components/ExpenseModal";
 import ExpenseChart from "../components/ExpenseChart";
-import {
-  ArrowUpIcon,
-  ArrowDownIcon,
-  FunnelIcon,
-  DocumentArrowDownIcon,
-} from "@heroicons/react/24/outline";
+import { ArrowUpIcon, ArrowDownIcon } from "@heroicons/react/24/outline";
 
 function Expenses() {
   const dispatch = useDispatch();

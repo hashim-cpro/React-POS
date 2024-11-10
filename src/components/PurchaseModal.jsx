@@ -1,4 +1,3 @@
-import React from "react";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { addPurchase } from "../store/slices/purchaseSlice";
