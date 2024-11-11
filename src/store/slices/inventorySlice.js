@@ -25,7 +25,7 @@ const inventorySlice = createSlice({
     addProduct: (state, action) => {
       const newProduct = {
         ...action.payload,
-        id: Date.now().toString(),
+        id: `prod_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

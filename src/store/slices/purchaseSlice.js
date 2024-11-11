@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   purchases: [],
@@ -7,13 +7,13 @@ const initialState = {
 };
 
 const purchaseSlice = createSlice({
-  name: 'purchases',
+  name: "purchases",
   initialState,
   reducers: {
     addPurchase: (state, action) => {
       const newPurchase = {
         ...action.payload,
-        id: Date.now().toString(),
+        id: `purch_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         timestamp: new Date().toISOString(),
       };
       state.purchases.unshift(newPurchase);
@@ -31,5 +31,6 @@ const purchaseSlice = createSlice({
   },
 });
 
-export const { addPurchase, setPurchases, setLoading, setError } = purchaseSlice.actions;
+export const { addPurchase, setPurchases, setLoading, setError } =
+  purchaseSlice.actions;
 export default purchaseSlice.reducer;

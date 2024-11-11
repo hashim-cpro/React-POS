@@ -19,6 +19,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+src/config/Api.js
 *.local
 
 # Editor directories and files

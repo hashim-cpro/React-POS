@@ -19,7 +19,7 @@ const salesSlice = createSlice({
     addSale: (state, action) => {
       const newSale = {
         ...action.payload,
-        id: Date.now().toString(),
+        id: `sale_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         timestamp: new Date().toISOString(),
       };
       state.sales.push(newSale);
@@ -29,7 +29,6 @@ const salesSlice = createSlice({
       state.sales = [];
       state.todayTotal = 0;
     },
-    // Add this reducer to handle initial state loading
     loadSales: (state, action) => {
       state.sales = action.payload;
       state.todayTotal = calculateTodayTotal(action.payload);

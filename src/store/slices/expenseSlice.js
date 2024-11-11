@@ -1,32 +1,32 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   expenses: [],
   categories: [
-    'Rent',
-    'Salaries',
-    'Utilities',
-    'Supplies',
-    'Marketing',
-    'Insurance',
-    'Maintenance',
-    'Other'
+    "Rent",
+    "Salaries",
+    "Utilities",
+    "Supplies",
+    "Marketing",
+    "Insurance",
+    "Maintenance",
+    "Other",
   ],
 };
 
 const expenseSlice = createSlice({
-  name: 'expenses',
+  name: "expenses",
   initialState,
   reducers: {
     addExpense: (state, action) => {
       state.expenses.unshift({
         ...action.payload,
-        id: Date.now().toString(),
+        id: `exp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         createdAt: new Date().toISOString(),
       });
     },
     updateExpense: (state, action) => {
-      const index = state.expenses.findIndex(e => e.id === action.payload.id);
+      const index = state.expenses.findIndex((e) => e.id === action.payload.id);
       if (index !== -1) {
         state.expenses[index] = {
           ...action.payload,
@@ -35,7 +35,7 @@ const expenseSlice = createSlice({
       }
     },
     deleteExpense: (state, action) => {
-      state.expenses = state.expenses.filter(e => e.id !== action.payload);
+      state.expenses = state.expenses.filter((e) => e.id !== action.payload);
     },
     addCategory: (state, action) => {
       if (!state.categories.includes(action.payload)) {
@@ -45,5 +45,6 @@ const expenseSlice = createSlice({
   },
 });
 
-export const { addExpense, updateExpense, deleteExpense, addCategory } = expenseSlice.actions;
+export const { addExpense, updateExpense, deleteExpense, addCategory } =
+  expenseSlice.actions;
 export default expenseSlice.reducer;

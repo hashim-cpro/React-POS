@@ -4,6 +4,7 @@ import inventoryReducer from "./slices/inventorySlice";
 import salesReducer from "./slices/salesSlice";
 import purchaseReducer from "./slices/purchaseSlice";
 import expenseReducer from "./slices/expenseSlice";
+import authReducer from "./slices/authSlice";
 import { localStorageMiddleware } from "./middleware/localStorageMiddleware";
 
 const loadState = () => {
@@ -34,6 +35,7 @@ export const store = configureStore({
     sales: salesReducer,
     purchases: purchaseReducer,
     expenses: expenseReducer,
+    auth: authReducer,
   },
   preloadedState,
   middleware: (getDefaultMiddleware) =>
