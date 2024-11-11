@@ -6,6 +6,7 @@ import {
   DocumentTextIcon,
   BanknotesIcon,
 } from "@heroicons/react/24/outline";
+import Logo from "../assets/Logo.svg";
 
 export default function Sidebar() {
   const location = useLocation();
@@ -14,42 +15,44 @@ export default function Sidebar() {
     {
       name: "Dashboard",
       path: "/",
-      icon: <HomeIcon className="h-5 w-5 mr-2" />,
+      icon: <HomeIcon className="h-5 w-5 mr-2 stroke-customsteel" />,
     },
     {
       name: "Sales",
       path: "/sales",
-      icon: <ShoppingCartIcon className="h-5 w-5 mr-2" />,
+      icon: <ShoppingCartIcon className="h-5 w-5 mr-2 stroke-customsteel" />,
     },
     {
       name: "Inventory",
       path: "/inventory",
-      icon: <CubeIcon className="h-5 w-5 mr-2" />,
+      icon: <CubeIcon className="h-5 w-5 mr-2 stroke-customsteel" />,
     },
     {
       name: "Purchases",
       path: "/purchases",
-      icon: <DocumentTextIcon className="h-5 w-5 mr-2" />,
+      icon: <DocumentTextIcon className="h-5 w-5 mr-2 stroke-customred" />,
     },
     {
       name: "Expenses",
       path: "/expenses",
-      icon: <BanknotesIcon className="h-5 w-5 mr-2" />,
+      icon: <BanknotesIcon className="h-5 w-5 mr-2 stroke-customred" />,
     },
   ];
 
   return (
     <div className="w-64 bg-white shadow-lg">
       <div className="p-4">
-        <h2 className="text-xl font-bold">POS System</h2>
+        <img src={Logo} alt="Logo" />
       </div>
-      <nav className="mt-4">
+      <nav className="mt-4 flex items-center flex-col">
         {navigation.map((item) => (
           <Link
             key={item.path}
             to={item.path}
-            className={`flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 ${
-              location.pathname === item.path ? "bg-gray-100" : ""
+            className={`flex items-center px-4 py-2 font-phantom w-[95%] rounded-lg text-primary hover:bg-customsmoke ${
+              location.pathname === item.path
+                ? "bg-customcyan hover:bg-customcyan"
+                : ""
             }`}
           >
             {item.icon}

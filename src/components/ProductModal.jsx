@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { addProduct, updateProduct } from "../store/slices/inventorySlice";
 
@@ -6,6 +6,9 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
   const dispatch = useDispatch();
   const { products } = useSelector((state) => state.inventory);
   const [error, setError] = useState("");
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
+  const dropdownRef = useRef(null);
   const [product, setProduct] = useState({
     name: "",
     price: "",
@@ -16,6 +19,14 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
     description: "",
     image: "",
   });
+
+  // Get unique categories from existing products
+  const existingCategories = [
+    ...new Set(products.map((p) => p.category)),
+  ].filter(Boolean);
+  const filteredCategories = existingCategories.filter((category) =>
+    category.toLowerCase().includes(product.category.toLowerCase())
+  );
 
   useEffect(() => {
     if (editingProduct) {
@@ -39,6 +50,17 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
     }
     setError("");
   }, [editingProduct]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowCategoryDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const validateProduct = () => {
     const existingProduct = products.find(
@@ -75,6 +97,19 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
       dispatch(addProduct({ ...processedProduct, id: Date.now().toString() }));
     }
     onClose();
+  };
+
+  const handleCategorySelect = (category) => {
+    setProduct({ ...product, category });
+    setShowCategoryDropdown(false);
+  };
+
+  const handleAddNewCategory = () => {
+    if (newCategory.trim()) {
+      setProduct({ ...product, category: newCategory.trim() });
+      setNewCategory("");
+      setShowCategoryDropdown(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -223,7 +258,7 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
                 />
               </div>
 
-              <div>
+              <div className="relative" ref={dropdownRef}>
                 <label className="block text-sm font-medium text-gray-700">
                   Category
                 </label>
@@ -233,10 +268,46 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
                   value={product.category}
                   onChange={(e) => {
                     setProduct({ ...product, category: e.target.value });
+                    setShowCategoryDropdown(true);
                     setError("");
                   }}
+                  onFocus={() => setShowCategoryDropdown(true)}
                   required
                 />
+                {showCategoryDropdown && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+                    {filteredCategories.length > 0 ? (
+                      <ul className="max-h-48 overflow-auto">
+                        {filteredCategories.map((category) => (
+                          <li
+                            key={category}
+                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                            onClick={() => handleCategorySelect(category)}
+                          >
+                            {category}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div className="p-4">
+                        <p className="text-sm text-gray-500">
+                          No matching categories
+                        </p>
+                        {product.category && (
+                          <button
+                            type="button"
+                            className="mt-2 text-sm text-indigo-600 hover:text-indigo-500"
+                            onClick={() =>
+                              handleCategorySelect(product.category)
+                            }
+                          >
+                            Add "{product.category}" as new category
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="sm:col-span-2">
