@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { login, register, logout, getCurrentUser } from "../config/appwrite";
-import { setUser, clearUser } from "../store/slices/authSlice";
+import { setUser, clearUser, syncUserData } from "../store/slices/authSlice";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 
 export default function LoginButton({ isCollapsed }) {
@@ -17,14 +17,15 @@ export default function LoginButton({ isCollapsed }) {
 
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
+  const syncing = useSelector((state) => state.auth.syncing);
 
-  // Check for existing session on mount
   useEffect(() => {
     const checkSession = async () => {
       try {
         const response = await getCurrentUser();
         if (response.success) {
           dispatch(setUser(response.data));
+          dispatch(syncUserData(response.data.$id));
         }
       } catch (error) {
         console.error("Session check failed:", error);
@@ -55,6 +56,7 @@ export default function LoginButton({ isCollapsed }) {
 
       if (response.success) {
         dispatch(setUser(response.data));
+        dispatch(syncUserData(response.data.$id));
         setIsModalOpen(false);
         setFormData({ email: "", password: "", name: "" });
       } else {
@@ -97,6 +99,9 @@ export default function LoginButton({ isCollapsed }) {
                     {user.name || "User"}
                   </p>
                   <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                  {syncing && (
+                    <p className="text-xs text-blue-500">Syncing data...</p>
+                  )}
                 </div>
               )}
             </div>

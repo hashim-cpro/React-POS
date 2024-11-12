@@ -42,9 +42,18 @@ const expenseSlice = createSlice({
         state.categories.push(action.payload);
       }
     },
+    setExpenses: (state, action) => {
+      state.expenses = action.payload.expenses || [];
+      state.categories = action.payload.categories || state.categories;
+    },
   },
 });
 
-export const { addExpense, updateExpense, deleteExpense, addCategory } =
-  expenseSlice.actions;
+export const {
+  addExpense,
+  updateExpense,
+  deleteExpense,
+  addCategory,
+  setExpenses,
+} = expenseSlice.actions;
 export default expenseSlice.reducer;
