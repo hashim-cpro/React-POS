@@ -11,7 +11,14 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setUser: (state, action) => {
-      state.user = action.payload;
+      // Transform Appwrite user data to our format
+      const userData = action.payload;
+      state.user = {
+        id: userData.$id,
+        email: userData.email,
+        name: userData.name,
+        createdAt: userData.$createdAt,
+      };
       state.loading = false;
       state.error = null;
     },

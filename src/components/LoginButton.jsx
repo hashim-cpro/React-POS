@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { login, register, logout } from "../config/appwrite";
+import { login, register, logout, getCurrentUser } from "../config/appwrite";
 import { setUser, clearUser } from "../store/slices/authSlice";
+import { UserCircleIcon } from "@heroicons/react/24/outline";
 
 export default function LoginButton({ isCollapsed }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -16,6 +17,24 @@ export default function LoginButton({ isCollapsed }) {
 
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
+
+  // Check for existing session on mount
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const response = await getCurrentUser();
+        if (response.success) {
+          dispatch(setUser(response.data));
+        }
+      } catch (error) {
+        console.error("Session check failed:", error);
+      }
+    };
+
+    if (!user) {
+      checkSession();
+    }
+  }, [dispatch, user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -61,35 +80,56 @@ export default function LoginButton({ isCollapsed }) {
     <>
       <div className="mt-auto mb-4 px-4">
         {user ? (
-          <button
-            onClick={handleLogout}
-            disabled={isLoading}
-            className={`w-full flex items-center justify-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors ${
-              isCollapsed ? "p-2" : "px-4 py-2"
+          <div
+            className={`bg-gray-50 rounded-lg p-3 ${
+              isCollapsed ? "items-center" : ""
             }`}
           >
-            {isLoading ? (
-              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-            ) : isCollapsed ? (
-              <span className="sr-only">Logout</span>
-            ) : (
-              "Logout"
-            )}
-          </button>
+            <div
+              className={`flex items-center ${
+                isCollapsed ? "justify-center" : "mb-3"
+              }`}
+            >
+              <UserCircleIcon className="h-8 w-8 text-gray-400" />
+              {!isCollapsed && (
+                <div className="ml-3 overflow-hidden">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {user.name || "User"}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                </div>
+              )}
+            </div>
+            <button
+              onClick={handleLogout}
+              disabled={isLoading}
+              className={`w-full flex items-center justify-center bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors ${
+                isCollapsed ? "p-2" : "px-4 py-2"
+              }`}
+            >
+              {isLoading ? (
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+              ) : isCollapsed ? (
+                <span className="sr-only">Logout</span>
+              ) : (
+                "Logout"
+              )}
+            </button>
+          </div>
         ) : (
           <button
             onClick={() => setIsModalOpen(true)}
