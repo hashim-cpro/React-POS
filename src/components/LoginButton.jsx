@@ -4,6 +4,7 @@ import { login, register, logout, getCurrentUser } from "../config/appwrite";
 import { setUser, clearUser, syncUserData } from "../store/slices/authSlice";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 
+// eslint-disable-next-line react/prop-types
 export default function LoginButton({ isCollapsed }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -63,7 +64,7 @@ export default function LoginButton({ isCollapsed }) {
         setError(response.error);
       }
     } catch (err) {
-      setError("An unexpected error occurred");
+      setError("An unexpected error occurred", err);
     } finally {
       setIsLoading(false);
     }

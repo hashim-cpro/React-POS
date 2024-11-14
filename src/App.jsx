@@ -12,7 +12,7 @@ import Purchases from "./pages/Purchases";
 import Expenses from "./pages/Expenses";
 import Login from "./pages/Login";
 
-function AuthWrapper() {
+export default function App() {
   useEffect(() => {
     const checkSession = async () => {
       try {
@@ -27,27 +27,20 @@ function AuthWrapper() {
 
     checkSession();
   }, []);
-
-  return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route element={<Layout />}>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/sales" element={<Sales />} />
-        <Route path="/inventory" element={<Inventory />} />
-        <Route path="/purchases" element={<Purchases />} />
-        <Route path="/expenses" element={<Expenses />} />
-      </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  );
-}
-
-export default function App() {
   return (
     <Provider store={store}>
       <BrowserRouter basename={import.meta.env.BASE_URL}>
-        <AuthWrapper />
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route element={<Layout />}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/sales" element={<Sales />} />
+            <Route path="/inventory" element={<Inventory />} />
+            <Route path="/purchases" element={<Purchases />} />
+            <Route path="/expenses" element={<Expenses />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </BrowserRouter>
     </Provider>
   );

@@ -7,10 +7,10 @@ import { loadSales } from "./salesSlice";
 import { setExpenses } from "./expenseSlice";
 
 const COLLECTION_IDS = {
-  inventory: "inventory",
-  sales: "sales",
-  purchases: "purchases",
-  expenses: "expenses",
+  inventory: import.meta.env.VITE_INVENTORY,
+  sales: import.meta.env.VITE_SALES,
+  purchases: import.meta.env.VITE_PURCHASES,
+  expenses: import.meta.env.VITE_EXPENSES,
 };
 
 export const syncUserData = createAsyncThunk(

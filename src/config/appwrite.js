@@ -1,10 +1,9 @@
 import { Client, Account, Databases } from "appwrite";
-import {
-  APPWRITE_ENDPOINT,
-  APPWRITE_PROJECT_ID,
-  APPWRITE_DATABASE_ID,
-} from "./Api";
 
+const APPWRITE_ENDPOINT = import.meta.env.VITE_APPWRITE_ENDPOINT;
+const APPWRITE_PROJECT_ID = import.meta.env.VITE_APPWRITE_PROJECT_ID;
+const APPWRITE_DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
+console.log(APPWRITE_ENDPOINT);
 const client = new Client()
   .setEndpoint(APPWRITE_ENDPOINT)
   .setProject(APPWRITE_PROJECT_ID);
@@ -47,7 +46,7 @@ export const logout = async () => {
 
 export const getCurrentUser = async () => {
   try {
-    const user = await account.get();
+    const user = await account.get(); // It throws a 401 error if the user doesn't has an active session.
     return { success: true, data: user };
   } catch (error) {
     return { success: false, error: error.message };

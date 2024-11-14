@@ -15,11 +15,11 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-
+.github
 node_modules
 dist
 dist-ssr
-src/config/Api.js
+.env
 *.local
 
 # Editor directories and files
