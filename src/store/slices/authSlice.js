@@ -6,39 +6,58 @@ import { setPurchases } from "./purchaseSlice";
 import { loadSales } from "./salesSlice";
 import { setExpenses } from "./expenseSlice";
 
+const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
 const COLLECTION_IDS = {
-  inventory: import.meta.env.VITE_INVENTORY,
-  sales: import.meta.env.VITE_SALES,
-  purchases: import.meta.env.VITE_PURCHASES,
-  expenses: import.meta.env.VITE_EXPENSES,
+  inventory: import.meta.env.VITE_INVENTORY_COLLECTION,
+  sales: import.meta.env.VITE_SALES_COLLECTION,
+  purchases: import.meta.env.VITE_PURCHASES_COLLECTION,
+  expenses: import.meta.env.VITE_EXPENSES_COLLECTION,
+};
+
+const fetchCollectionData = async (collectionId, userId) => {
+  try {
+    const response = await databases.listDocuments(DATABASE_ID, collectionId, [
+      Query.equal("userId", userId),
+    ]);
+
+    if (response.documents.length > 0) {
+      return JSON.parse(response.documents[0].data);
+    }
+    return null;
+  } catch (error) {
+    console.error(`Error fetching ${collectionId}:`, error);
+    return null;
+  }
 };
 
 export const syncUserData = createAsyncThunk(
   "auth/syncUserData",
   async (userId, { dispatch }) => {
+    if (!userId) return false;
+
     try {
-      const fetchData = async (collectionId) => {
-        const response = await databases.listDocuments(
-          "pos_database",
-          collectionId,
-          [Query.equal("userId", userId)]
-        );
-        return response.documents[0]?.data
-          ? JSON.parse(response.documents[0].data)
-          : null;
-      };
+      // Clear session storage before fetching fresh data
+      sessionStorage.clear();
 
       const [inventory, sales, purchases, expenses] = await Promise.all([
-        fetchData(COLLECTION_IDS.inventory),
-        fetchData(COLLECTION_IDS.sales),
-        fetchData(COLLECTION_IDS.purchases),
-        fetchData(COLLECTION_IDS.expenses),
+        fetchCollectionData(COLLECTION_IDS.inventory, userId),
+        fetchCollectionData(COLLECTION_IDS.sales, userId),
+        fetchCollectionData(COLLECTION_IDS.purchases, userId),
+        fetchCollectionData(COLLECTION_IDS.expenses, userId),
       ]);
 
-      if (inventory) dispatch(setProducts(inventory.products));
-      if (sales) dispatch(loadSales(sales.sales));
-      if (purchases) dispatch(setPurchases(purchases.purchases));
-      if (expenses) dispatch(setExpenses(expenses));
+      if (inventory?.products) {
+        dispatch(setProducts(inventory.products));
+      }
+      if (sales?.sales) {
+        dispatch(loadSales(sales.sales));
+      }
+      if (purchases?.purchases) {
+        dispatch(setPurchases(purchases.purchases));
+      }
+      if (expenses) {
+        dispatch(setExpenses(expenses));
+      }
 
       return true;
     } catch (error) {
@@ -74,6 +93,8 @@ const authSlice = createSlice({
       state.user = null;
       state.loading = false;
       state.error = null;
+      // Clear session storage on logout
+      sessionStorage.clear();
     },
     setLoading: (state, action) => {
       state.loading = action.payload;

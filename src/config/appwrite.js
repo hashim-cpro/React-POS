@@ -1,23 +1,19 @@
 import { Client, Account, Databases } from "appwrite";
 
-const APPWRITE_ENDPOINT = import.meta.env.VITE_APPWRITE_ENDPOINT;
-const APPWRITE_PROJECT_ID = import.meta.env.VITE_APPWRITE_PROJECT_ID;
-const APPWRITE_DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
-console.log(APPWRITE_ENDPOINT);
 const client = new Client()
-  .setEndpoint(APPWRITE_ENDPOINT)
-  .setProject(APPWRITE_PROJECT_ID);
+  .setEndpoint(import.meta.env.VITE_APPWRITE_ENDPOINT)
+  .setProject(import.meta.env.VITE_APPWRITE_PROJECT_ID);
 
 export const account = new Account(client);
 export const databases = new Databases(client);
 
-// Authentication functions
 export const login = async (email, password) => {
   try {
-    await account.createEmailSession(email, password);
+    const session = await account.createEmailSession(email, password);
     const user = await account.get();
     return { success: true, data: user };
   } catch (error) {
+    console.error("Login error:", error);
     return { success: false, error: error.message };
   }
 };
@@ -31,6 +27,7 @@ export const register = async (email, password, name) => {
     }
     return { success: false, error: "Registration failed" };
   } catch (error) {
+    console.error("Registration error:", error);
     return { success: false, error: error.message };
   }
 };
@@ -40,24 +37,27 @@ export const logout = async () => {
     await account.deleteSession("current");
     return { success: true };
   } catch (error) {
+    console.error("Logout error:", error);
     return { success: false, error: error.message };
   }
 };
 
 export const getCurrentUser = async () => {
   try {
-    const user = await account.get(); // It throws a 401 error if the user doesn't has an active session.
+    const user = await account.get();
     return { success: true, data: user };
   } catch (error) {
+    console.error("Get current user error:", error);
     return { success: false, error: error.message };
   }
 };
 
-// Database helper functions
-export const createCollection = async (collectionId, data, userId) => {
+export const createDocument = async (collectionId, data, userId) => {
+  if (!collectionId || !userId) return null;
+
   try {
     return await databases.createDocument(
-      APPWRITE_DATABASE_ID,
+      import.meta.env.VITE_APPWRITE_DATABASE_ID,
       collectionId,
       "unique()",
       {
@@ -66,15 +66,17 @@ export const createCollection = async (collectionId, data, userId) => {
       }
     );
   } catch (error) {
-    console.error(`Error creating ${collectionId}:`, error);
+    console.error(`Error creating document in ${collectionId}:`, error);
     throw error;
   }
 };
 
-export const updateCollection = async (collectionId, documentId, data) => {
+export const updateDocument = async (collectionId, documentId, data) => {
+  if (!collectionId || !documentId) return null;
+
   try {
     return await databases.updateDocument(
-      APPWRITE_DATABASE_ID,
+      import.meta.env.VITE_APPWRITE_DATABASE_ID,
       collectionId,
       documentId,
       {
@@ -82,7 +84,23 @@ export const updateCollection = async (collectionId, documentId, data) => {
       }
     );
   } catch (error) {
-    console.error(`Error updating ${collectionId}:`, error);
+    console.error(`Error updating document in ${collectionId}:`, error);
+    throw error;
+  }
+};
+
+export const getDocuments = async (collectionId, userId) => {
+  if (!collectionId || !userId) return [];
+
+  try {
+    const response = await databases.listDocuments(
+      import.meta.env.VITE_APPWRITE_DATABASE_ID,
+      collectionId,
+      [Query.equal("userId", userId)]
+    );
+    return response.documents;
+  } catch (error) {
+    console.error(`Error fetching documents from ${collectionId}:`, error);
     throw error;
   }
 };
