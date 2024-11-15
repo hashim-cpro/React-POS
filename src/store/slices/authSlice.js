@@ -36,9 +36,6 @@ export const syncUserData = createAsyncThunk(
     if (!userId) return false;
 
     try {
-      // Clear session storage before fetching fresh data
-      sessionStorage.clear();
-
       const [inventory, sales, purchases, expenses] = await Promise.all([
         fetchCollectionData(COLLECTION_IDS.inventory, userId),
         fetchCollectionData(COLLECTION_IDS.sales, userId),
@@ -81,10 +78,10 @@ const authSlice = createSlice({
     setUser: (state, action) => {
       const userData = action.payload;
       state.user = {
-        id: userData.$id,
+        id: userData.id || userData.$id,
         email: userData.email,
         name: userData.name,
-        createdAt: userData.$createdAt,
+        createdAt: userData.$createdAt || userData.createdAt,
       };
       state.loading = false;
       state.error = null;
@@ -93,7 +90,6 @@ const authSlice = createSlice({
       state.user = null;
       state.loading = false;
       state.error = null;
-      // Clear session storage on logout
       sessionStorage.clear();
     },
     setLoading: (state, action) => {
@@ -120,3 +116,4 @@ const authSlice = createSlice({
 
 export const { setUser, clearUser, setLoading, setError } = authSlice.actions;
 export default authSlice.reducer;
+//lkahklfklk ,khk

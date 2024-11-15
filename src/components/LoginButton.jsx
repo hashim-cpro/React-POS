@@ -3,8 +3,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { login, register, logout, getCurrentUser } from "../config/appwrite";
 import { setUser, clearUser, syncUserData } from "../store/slices/authSlice";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
+import { setProducts } from "../store/slices/inventorySlice";
+import { loadSales } from "../store/slices/salesSlice";
+import { setPurchases } from "../store/slices/purchaseSlice";
+import { setExpenses } from "../store/slices/expenseSlice";
 
-// eslint-disable-next-line react/prop-types
 export default function LoginButton({ isCollapsed }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -26,7 +29,7 @@ export default function LoginButton({ isCollapsed }) {
         const response = await getCurrentUser();
         if (response.success) {
           dispatch(setUser(response.data));
-          dispatch(syncUserData(response.data.$id));
+          await dispatch(syncUserData(response.data.$id));
         }
       } catch (error) {
         console.error("Session check failed:", error);
@@ -38,6 +41,56 @@ export default function LoginButton({ isCollapsed }) {
     }
   }, [dispatch, user]);
 
+  const syncSessionData = async (userId) => {
+    try {
+      let hasData = false;
+      const inventory = sessionStorage.getItem("pos_inventory");
+      const sales = sessionStorage.getItem("pos_sales");
+      const purchases = sessionStorage.getItem("pos_purchases");
+      const expenses = sessionStorage.getItem("pos_expenses");
+
+      if (inventory) {
+        const data = JSON.parse(inventory);
+        if (data.products?.length > 0) {
+          dispatch(setProducts(data.products));
+          hasData = true;
+        }
+      }
+      if (sales) {
+        const data = JSON.parse(sales);
+        if (data.sales?.length > 0) {
+          dispatch(loadSales(data.sales));
+          hasData = true;
+        }
+      }
+      if (purchases) {
+        const data = JSON.parse(purchases);
+        if (data.purchases?.length > 0) {
+          dispatch(setPurchases(data.purchases));
+          hasData = true;
+        }
+      }
+      if (expenses) {
+        const data = JSON.parse(expenses);
+        if (Object.keys(data).length > 0) {
+          dispatch(setExpenses(data));
+          hasData = true;
+        }
+      }
+
+      if (hasData) {
+        // Only sync if there's actual data to sync
+        await dispatch(syncUserData(userId));
+      }
+
+      // Clear session storage after successful sync
+      sessionStorage.clear();
+    } catch (error) {
+      console.error("Error syncing session data:", error);
+      throw error; // Propagate error for handling in registration flow
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -47,24 +100,31 @@ export default function LoginButton({ isCollapsed }) {
       let response;
       if (isLogin) {
         response = await login(formData.email, formData.password);
+        if (response.success) {
+          dispatch(setUser(response.data));
+          await dispatch(syncUserData(response.data.$id));
+        }
       } else {
         response = await register(
           formData.email,
           formData.password,
           formData.name
         );
+        if (response.success) {
+          dispatch(setUser(response.data));
+          await syncSessionData(response.data.$id);
+        }
       }
 
       if (response.success) {
-        dispatch(setUser(response.data));
-        dispatch(syncUserData(response.data.$id));
         setIsModalOpen(false);
         setFormData({ email: "", password: "", name: "" });
       } else {
         setError(response.error);
       }
     } catch (err) {
-      setError("An unexpected error occurred", err);
+      setError("An unexpected error occurred");
+      console.error("Auth error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -72,11 +132,17 @@ export default function LoginButton({ isCollapsed }) {
 
   const handleLogout = async () => {
     setIsLoading(true);
-    const response = await logout();
-    if (response.success) {
-      dispatch(clearUser());
+    try {
+      const response = await logout();
+      if (response.success) {
+        dispatch(clearUser());
+        sessionStorage.clear(); // Clear any remaining session data
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   return (

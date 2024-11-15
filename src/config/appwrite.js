@@ -11,7 +11,15 @@ export const login = async (email, password) => {
   try {
     const session = await account.createEmailSession(email, password);
     const user = await account.get();
-    return { success: true, data: user };
+    return {
+      success: true,
+      data: {
+        ...user,
+        email: user.email,
+        name: user.name,
+        id: user.$id,
+      },
+    };
   } catch (error) {
     console.error("Login error:", error);
     return { success: false, error: error.message };
@@ -22,8 +30,12 @@ export const register = async (email, password, name) => {
   try {
     const user = await account.create("unique()", email, password, name);
     if (user) {
+      // Automatically log in after registration
       const session = await login(email, password);
-      return { success: true, data: { user, session: session.data } };
+      return {
+        success: true,
+        data: session.data,
+      };
     }
     return { success: false, error: "Registration failed" };
   } catch (error) {
@@ -45,8 +57,20 @@ export const logout = async () => {
 export const getCurrentUser = async () => {
   try {
     const user = await account.get();
-    return { success: true, data: user };
+    return {
+      success: true,
+      data: {
+        ...user,
+        email: user.email,
+        name: user.name,
+        id: user.$id,
+      },
+    };
   } catch (error) {
+    if (error.code === 401) {
+      // User is not authenticated
+      return { success: false, error: "Not authenticated" };
+    }
     console.error("Get current user error:", error);
     return { success: false, error: error.message };
   }
