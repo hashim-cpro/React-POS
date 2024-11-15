@@ -8,6 +8,7 @@ import { loadSales } from "../store/slices/salesSlice";
 import { setPurchases } from "../store/slices/purchaseSlice";
 import { setExpenses } from "../store/slices/expenseSlice";
 
+// eslint-disable-next-line react/prop-types
 export default function LoginButton({ isCollapsed }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -137,9 +138,10 @@ export default function LoginButton({ isCollapsed }) {
       if (response.success) {
         dispatch(clearUser());
         sessionStorage.clear(); // Clear any remaining session data
+        window.location.reload();
       }
     } catch (error) {
-      console.error("Logout error:", error);
+      console.error("Logout error: \n", error);
     } finally {
       setIsLoading(false);
     }

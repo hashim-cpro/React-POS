@@ -9,6 +9,7 @@ export const databases = new Databases(client);
 
 export const login = async (email, password) => {
   try {
+    // eslint-disable-next-line no-unused-vars
     const session = await account.createEmailSession(email, password);
     const user = await account.get();
     return {
@@ -120,6 +121,7 @@ export const getDocuments = async (collectionId, userId) => {
     const response = await databases.listDocuments(
       import.meta.env.VITE_APPWRITE_DATABASE_ID,
       collectionId,
+      // eslint-disable-next-line no-undef
       [Query.equal("userId", userId)]
     );
     return response.documents;

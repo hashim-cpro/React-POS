@@ -24,9 +24,9 @@ export default function App() {
         console.error("Session check failed:", error);
       }
     };
-
     checkSession();
   }, []);
+
   return (
     <Provider store={store}>
       <BrowserRouter basename={import.meta.env.BASE_URL}>
