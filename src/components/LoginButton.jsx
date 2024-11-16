@@ -113,6 +113,7 @@ export default function LoginButton({ isCollapsed }) {
         );
         if (response.success) {
           dispatch(setUser(response.data));
+          alert("A verification email was sent to your your address!");
           await syncSessionData(response.data.$id);
         }
       }

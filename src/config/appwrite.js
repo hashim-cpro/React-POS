@@ -19,6 +19,7 @@ export const login = async (email, password) => {
         email: user.email,
         name: user.name,
         id: user.$id,
+        emailVerification: user.emailVerification,
       },
     };
   } catch (error) {
@@ -33,9 +34,19 @@ export const register = async (email, password, name) => {
     if (user) {
       // Automatically log in after registration
       const session = await login(email, password);
+      account
+        .createVerification("http://localhost:5173/react-based-POS-system")
+        .then(() => {
+          console.log("Verification email sent!");
+        })
+        .catch((error) => {
+          console.error("Error sending verification email: \n", error);
+        });
+
       return {
         success: true,
         data: session.data,
+        emailVerification: user.emailVerification,
       };
     }
     return { success: false, error: "Registration failed" };
@@ -65,6 +76,7 @@ export const getCurrentUser = async () => {
         email: user.email,
         name: user.name,
         id: user.$id,
+        emailVerification: user.emailVerification,
       },
     };
   } catch (error) {
