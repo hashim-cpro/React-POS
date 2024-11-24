@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { login, register, logout, getCurrentUser } from "../config/appwrite";
+import {
+  login,
+  register,
+  logout,
+  getCurrentUser,
+  verifyOTP,
+} from "../config/appwrite";
 import { setUser, clearUser, syncUserData } from "../store/slices/authSlice";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { setProducts } from "../store/slices/inventorySlice";

@@ -10,7 +10,7 @@ import Sales from "./pages/Sales";
 import Inventory from "./pages/Inventory";
 import Purchases from "./pages/Purchases";
 import Expenses from "./pages/Expenses";
-import Login from "./pages/Login";
+import Verification from "./pages/Verification";
 
 export default function App() {
   useEffect(() => {
@@ -35,7 +35,6 @@ export default function App() {
     <Provider store={store}>
       <BrowserRouter basename={import.meta.env.BASE_URL}>
         <Routes>
-          <Route path="/login" element={<Login />} />
           <Route element={<Layout />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/sales" element={<Sales />} />
@@ -43,6 +42,7 @@ export default function App() {
             <Route path="/purchases" element={<Purchases />} />
             <Route path="/expenses" element={<Expenses />} />
           </Route>
+          <Route path="/verify" element={<Verification />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

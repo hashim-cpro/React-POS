@@ -6,12 +6,9 @@ Have you ever dreamed of a point-of-sale system that feels like a breeze to use 
 
 ## 🚀 Table of Contents
 
-- [🎉 Welcome to the React POS System! 🎉](#-welcome-to-the-react-pos-system-)
-  - [🚀 Table of Contents](#-table-of-contents)
-  - [✨ Features](#-features)
-  - [🎥 Demo](#-demo)
-  - [🛠 Technologies Used](#-technologies-used)
-  - [📥 Installation](#-installation)
+- [✨ Features](#-features)
+- [🎥 Demo](#-demo)
+- [🛠 Technologies Used](#-technologies-used)
 
 ## ✨ Features
 
@@ -79,16 +76,3 @@ Push to the branch (git push origin feature/YourFeature).
 Open a pull request and let the magic happen!
 📄 License
 This project is licensed under the MIT License. See the LICENSE file for details.
-
-Todos:
-
-- Integrate appwrite's authentication and database correctly
-- Implement a more robust and user-friendly UI
-- Add more features to the POS system (e.g., organization's user management, customer management)
-- add comments on the whole code explaining my future self about the code I wrote.
-
-Right now learning appwrite, how to configure it up! First of all start reading the whole god danm thing and start making notes and other stuff! Log in 3-10 hours of coding on daily basis!
-It's 13 and I have a lot of work to do! It's just not about the ipad or anything but the addiction of actually creating something! I know what is a hook, state, context, redux and now I just need to make projects like this one. Think of it as something that everyone will use! Start to understand each thing up! Ok man cheer up, it's time to do some shit!
-
-For the next 30 mins, just read the code, comment what you understand. List out all the things unknown!
-ok let's work now, First let's learn the authentication part then the database part and after that the other stuff. blog app and other stuff

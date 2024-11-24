@@ -10,7 +10,7 @@ export const databases = new Databases(client);
 export const login = async (email, password) => {
   try {
     // eslint-disable-next-line no-unused-vars
-    const session = await account.createEmailSession(email, password);
+    const session = await account.createEmailPasswordSession(email, password);
     const user = await account.get();
     return {
       success: true,
@@ -28,25 +28,45 @@ export const login = async (email, password) => {
   }
 };
 
+// export const register = async (email, password, name) => {
+//   try {
+//     const user = await account.create("unique()", email, password, name);
+//     if (user) {
+//       // Automatically log in after registration
+//       account.createEmailToken(ID.unique(), email).then(
+//         function (response) {
+//           console.log("Success sending otp"); // Success
+//           return response;
+//         },
+//         function (error) {
+//           console.log("Failure sending otp", error); // Failure
+//         }
+//       );
+//       // const session = await account.createSession(user.$id, secret); secret is the otp
+//       console.log("User", user); //start work from here
+//       return {
+//         success: true,
+//         // data: session.data,
+//         emailVerification: user.emailVerification,
+//       };
+//     }
+//     return { success: false, error: "Registration failed" };
+//   } catch (error) {
+//     console.error("Registration error:", error);
+//     return { success: false, error: error.message };
+//   }
+// };
 export const register = async (email, password, name) => {
   try {
     const user = await account.create("unique()", email, password, name);
     if (user) {
-      // Automatically log in after registration
-      const session = await login(email, password);
-      account
-        .createVerification("http://localhost:5173/react-based-POS-system")
-        .then(() => {
-          console.log("Verification email sent!");
-        })
-        .catch((error) => {
-          console.error("Error sending verification email: \n", error);
-        });
+      // Send OTP to user's email
+      await account.createEmailVerification(email);
 
       return {
         success: true,
-        data: session.data,
         emailVerification: user.emailVerification,
+        userId: user.$id, // Return userId for OTP verification
       };
     }
     return { success: false, error: "Registration failed" };
@@ -56,6 +76,31 @@ export const register = async (email, password, name) => {
   }
 };
 
+export const verifyOTP = async (userId, secret) => {
+  try {
+    const response = await account.updateVerification(userId, secret);
+    return { success: true, data: response };
+  } catch (error) {
+    console.error("OTP verification error:", error);
+    return { success: false, error: error.message };
+  }
+};
+export const verifyNewUser = async () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const secret = urlParams.get("secret");
+  const userId = urlParams.get("userId");
+
+  const promise = account.updateVerification(userId, secret);
+
+  promise.then(
+    function (response) {
+      console.log("Verification was successful! \n", response); // Success
+    },
+    function (error) {
+      console.log("there was some error verifying the user \n", error); // Failure
+    }
+  );
+};
 export const logout = async () => {
   try {
     await account.deleteSession("current");
