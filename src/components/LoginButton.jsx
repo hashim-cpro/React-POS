@@ -149,12 +149,19 @@ export default function LoginButton({ isCollapsed }) {
 
       const response = await verifyOTP(registrationData.userId, otp);
       if (response.success) {
+        const userData = {
+          id: registrationData.userId,
+          email: formData.email,
+          name: formData.name,
+          emailVerification: true,
+        };
+        dispatch(setUser(userData));
         await syncSessionData(registrationData.userId);
         setIsModalOpen(false);
         setOTP("");
         setShowOTPInput(false);
         setRegistrationData(null);
-        dispatch(setUser(registrationData.userId));
+        setFormData({ email: "", password: "", name: "" });
       } else {
         setError("Invalid OTP. Please try again.");
       }
