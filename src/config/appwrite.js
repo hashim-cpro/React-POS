@@ -1,4 +1,4 @@
-import { Client, Account, Databases } from "appwrite";
+import { Client, Account, Databases, ID } from "appwrite";
 
 const client = new Client()
   .setEndpoint(import.meta.env.VITE_APPWRITE_ENDPOINT)
@@ -28,43 +28,24 @@ export const login = async (email, password) => {
   }
 };
 
-// export const register = async (email, password, name) => {
-//   try {
-//     const user = await account.create("unique()", email, password, name);
-//     if (user) {
-//       // Automatically log in after registration
-//       account.createEmailToken(ID.unique(), email).then(
-//         function (response) {
-//           console.log("Success sending otp"); // Success
-//           return response;
-//         },
-//         function (error) {
-//           console.log("Failure sending otp", error); // Failure
-//         }
-//       );
-//       // const session = await account.createSession(user.$id, secret); secret is the otp
-//       console.log("User", user); //start work from here
-//       return {
-//         success: true,
-//         // data: session.data,
-//         emailVerification: user.emailVerification,
-//       };
-//     }
-//     return { success: false, error: "Registration failed" };
-//   } catch (error) {
-//     console.error("Registration error:", error);
-//     return { success: false, error: error.message };
-//   }
-// };
 export const register = async (email, password, name) => {
   try {
     const user = await account.create("unique()", email, password, name);
     if (user) {
-      // Send OTP to user's email
-      await account.createEmailVerification(email);
-
+      // Automatically log in after registration
+      account.createEmailToken(ID.unique(), email, true).then(
+        function (response) {
+          console.log("Success sending otp"); // Success
+          return response;
+        },
+        function (error) {
+          console.log("Failure sending otp", error); // Failure
+        }
+      );
+      // const session = await account.createSession(user.$id, secret); secret is the otp
       return {
         success: true,
+        // data: session.data,
         emailVerification: user.emailVerification,
         userId: user.$id, // Return userId for OTP verification
       };
@@ -77,9 +58,10 @@ export const register = async (email, password, name) => {
 };
 
 export const verifyOTP = async (userId, secret) => {
+  console.log("userId", userId, "\nOTP: ", secret);
   try {
-    const response = await account.updateVerification(userId, secret);
-    return { success: true, data: response };
+    const session = await account.createSession(userId, secret);
+    return { success: true, data: session.data };
   } catch (error) {
     console.error("OTP verification error:", error);
     return { success: false, error: error.message };
@@ -187,3 +169,22 @@ export const getDocuments = async (collectionId, userId) => {
     throw error;
   }
 };
+// export const register = async (email, password, name) => {
+//   try {
+//     const user = await account.create("unique()", email, password, name);
+//     if (user) {
+//       // Send OTP to user's email
+//       await account.createEmailVerification(email);
+
+//       return {
+//         success: true,
+//         emailVerification: user.emailVerification,
+//         userId: user.$id, // Return userId for OTP verification
+//       };
+//     }
+//     return { success: false, error: "Registration failed" };
+//   } catch (error) {
+//     console.error("Registration error:", error);
+//     return { success: false, error: error.message };
+//   }
+// };

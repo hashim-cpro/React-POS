@@ -20,6 +20,9 @@ export default function LoginButton({ isCollapsed }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState("");
+  const [showOTPInput, setShowOTPInput] = useState(false);
+  const [otp, setOTP] = useState("");
+  const [registrationData, setRegistrationData] = useState(null);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -86,15 +89,13 @@ export default function LoginButton({ isCollapsed }) {
       }
 
       if (hasData) {
-        // Only sync if there's actual data to sync
         await dispatch(syncUserData(userId));
       }
 
-      // Clear session storage after successful sync
       sessionStorage.clear();
     } catch (error) {
       console.error("Error syncing session data:", error);
-      throw error; // Propagate error for handling in registration flow
+      throw error;
     }
   };
 
@@ -104,35 +105,62 @@ export default function LoginButton({ isCollapsed }) {
     setError("");
 
     try {
-      let response;
       if (isLogin) {
-        response = await login(formData.email, formData.password);
+        const response = await login(formData.email, formData.password);
         if (response.success) {
           dispatch(setUser(response.data));
           await dispatch(syncUserData(response.data.$id));
+          setIsModalOpen(false);
+          setFormData({ email: "", password: "", name: "" });
+        } else {
+          setError(response.error);
         }
       } else {
-        response = await register(
+        const response = await register(
           formData.email,
           formData.password,
           formData.name
         );
         if (response.success) {
-          dispatch(setUser(response.data));
-          alert("A verification email was sent to your your address!");
-          await syncSessionData(response.data.$id);
+          setRegistrationData(response);
+          setShowOTPInput(true);
+          setError("");
+        } else {
+          setError(response.error);
         }
-      }
-
-      if (response.success) {
-        setIsModalOpen(false);
-        setFormData({ email: "", password: "", name: "" });
-      } else {
-        setError(response.error);
       }
     } catch (err) {
       setError("An unexpected error occurred");
       console.error("Auth error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    try {
+      if (!registrationData?.userId) {
+        throw new Error("Registration data is missing");
+      }
+
+      const response = await verifyOTP(registrationData.userId, otp);
+      if (response.success) {
+        await syncSessionData(registrationData.userId);
+        setIsModalOpen(false);
+        setOTP("");
+        setShowOTPInput(false);
+        setRegistrationData(null);
+        dispatch(setUser(registrationData.userId));
+      } else {
+        setError("Invalid OTP. Please try again.");
+      }
+    } catch (err) {
+      setError("Failed to verify OTP. Please try again.");
+      console.error("OTP verification error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -144,15 +172,68 @@ export default function LoginButton({ isCollapsed }) {
       const response = await logout();
       if (response.success) {
         dispatch(clearUser());
-        sessionStorage.clear(); // Clear any remaining session data
+        sessionStorage.clear();
         window.location.reload();
       }
     } catch (error) {
-      console.error("Logout error: \n", error);
+      console.error("Logout error:", error);
     } finally {
       setIsLoading(false);
     }
   };
+
+  const resetForm = () => {
+    setIsModalOpen(false);
+    setShowOTPInput(false);
+    setOTP("");
+    setError("");
+    setRegistrationData(null);
+    setFormData({ email: "", password: "", name: "" });
+  };
+
+  const renderOTPForm = () => (
+    <form onSubmit={handleVerifyOTP} className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          Enter OTP
+        </label>
+        <input
+          type="text"
+          required
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          value={otp}
+          onChange={(e) => setOTP(e.target.value)}
+          placeholder="Enter the OTP sent to your email"
+        />
+      </div>
+
+      <button
+        type="submit"
+        disabled={isLoading}
+        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+      >
+        {isLoading ? (
+          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+        ) : (
+          "Verify OTP"
+        )}
+      </button>
+    </form>
+  );
 
   return (
     <>
@@ -233,7 +314,7 @@ export default function LoginButton({ isCollapsed }) {
             <div className="fixed inset-0 bg-black opacity-50"></div>
             <div className="relative bg-white rounded-lg p-8 max-w-md w-full">
               <button
-                onClick={() => setIsModalOpen(false)}
+                onClick={resetForm}
                 className="absolute top-4 right-4 text-gray-400 hover:text-gray-500"
               >
                 <span className="sr-only">Close</span>
@@ -253,7 +334,7 @@ export default function LoginButton({ isCollapsed }) {
               </button>
 
               <h2 className="text-2xl font-bold mb-6">
-                {isLogin ? "Login" : "Register"}
+                {showOTPInput ? "Verify Email" : isLogin ? "Login" : "Register"}
               </h2>
 
               {error && (
@@ -262,94 +343,101 @@ export default function LoginButton({ isCollapsed }) {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {!isLogin && (
+              {showOTPInput ? (
+                renderOTPForm()
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  {!isLogin && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Name
+                      </label>
+                      <input
+                        type="text"
+                        required={!isLogin}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        value={formData.name}
+                        onChange={(e) =>
+                          setFormData({ ...formData, name: e.target.value })
+                        }
+                      />
+                    </div>
+                  )}
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Name
+                      Email
                     </label>
                     <input
-                      type="text"
-                      required={!isLogin}
+                      type="email"
+                      required
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      value={formData.name}
+                      value={formData.email}
                       onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
+                        setFormData({ ...formData, email: e.target.value })
                       }
                     />
                   </div>
-                )}
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                  />
-                </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      value={formData.password}
+                      onChange={(e) =>
+                        setFormData({ ...formData, password: e.target.value })
+                      }
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    value={formData.password}
-                    onChange={(e) =>
-                      setFormData({ ...formData, password: e.target.value })
-                    }
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  {isLoading ? (
-                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                  ) : isLogin ? (
-                    "Login"
-                  ) : (
-                    "Register"
-                  )}
-                </button>
-
-                <div className="text-center mt-4">
                   <button
-                    type="button"
-                    className="text-sm text-blue-600 hover:text-blue-500"
-                    onClick={() => setIsLogin(!isLogin)}
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
-                    {isLogin
-                      ? "Don't have an account? Register"
-                      : "Already have an account? Login"}
+                    {isLoading ? (
+                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                    ) : isLogin ? (
+                      "Login"
+                    ) : (
+                      "Register"
+                    )}
                   </button>
-                </div>
-              </form>
+
+                  <div className="text-center mt-4">
+                    <button
+                      type="button"
+                      className="text-sm text-blue-600 hover:text-blue-500"
+                      onClick={() => {
+                        setIsLogin(!isLogin);
+                        setError("");
+                      }}
+                    >
+                      {isLogin
+                        ? "Don't have an account? Register"
+                        : "Already have an account? Login"}
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           </div>
         </div>
