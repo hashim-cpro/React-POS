@@ -203,7 +203,14 @@ function Sales() {
                       >
                         <MinusIcon className="h-4 w-4" />
                       </button>
-                      <span className="w-8 text-center">{item.quantity}</span>
+                      <input
+                        type="number"
+                        value={item.quantity}
+                        className="w-8 text-center"
+                        onChange={(e) => {
+                          handleUpdateQuantity(item, parseInt(e.target.value));
+                        }}
+                      />
                       <button
                         className="p-1 hover:bg-gray-100 rounded"
                         onClick={() =>
