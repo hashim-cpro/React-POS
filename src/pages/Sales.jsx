@@ -1,21 +1,28 @@
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import Barcode from "react-barcode";
 import {
   addItem,
   removeItem,
   updateQuantity,
   clearCart,
+  updateDiscount,
 } from "../store/slices/cartSlice";
 import { updateProduct } from "../store/slices/inventorySlice";
 import { addSale } from "../store/slices/salesSlice";
-import { TrashIcon, MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
 import Receipt from "../components/Receipt";
+import ProductCard from "../components/ProductCard";
+import CartItem from "../components/CartItem";
+import BillTypeSelector from "../components/BillTypeSelector";
+import PaymentSection from "../components/PaymentSection";
+import { formatPrice } from "../utils/priceFormatters";
+import { calculateDiscountedPrice } from "../utils/discountCalculator";
 
 function Sales() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentSale, setCurrentSale] = useState(null);
+  const [billType, setBillType] = useState("retail");
+  const [showPayment, setShowPayment] = useState(false);
   const { products } = useSelector((state) => state.inventory);
   const { items: cartItems, total } = useSelector((state) => state.cart);
   const dispatch = useDispatch();
@@ -28,7 +35,19 @@ function Sales() {
 
   const handleAddToCart = (product) => {
     if (product.quantity > 0) {
-      dispatch(addItem(product));
+      const price =
+        billType === "wholesale" && product.wholesalePrice
+          ? product.wholesalePrice
+          : product.retailPrice;
+
+      dispatch(
+        addItem({
+          ...product,
+          price,
+          discount: 0,
+        })
+      );
+
       dispatch(
         updateProduct({
           ...product,
@@ -74,6 +93,22 @@ function Sales() {
     );
   };
 
+  const handleDiscountChange = (itemId, discount) => {
+    dispatch(updateDiscount({ id: itemId, discount }));
+  };
+
+  const handleBillTypeChange = (newBillType) => {
+    setBillType(newBillType);
+    // Update prices in cart based on new bill type
+    cartItems.forEach((item) => {
+      const price =
+        newBillType === "wholesale" && item.wholesalePrice
+          ? item.wholesalePrice
+          : item.retailPrice;
+      dispatch(updateQuantity({ id: item.id, price }));
+    });
+  };
+
   const handleClearCart = () => {
     cartItems.forEach((item) => {
       const product = products.find((p) => p.id === item.id);
@@ -87,29 +122,36 @@ function Sales() {
       }
     });
     dispatch(clearCart());
+    setShowPayment(false);
   };
 
-  const handleCompleteSale = async () => {
-    if (cartItems.length === 0) return;
+  const handlePaymentComplete = (payments) => {
+    const sale = {
+      id: Date.now().toString(),
+      items: cartItems.map((item) => ({
+        ...item,
+        finalPrice: calculateDiscountedPrice(item.price, item.discount),
+      })),
+      total,
+      payments,
+      billType,
+      date: new Date().toISOString(),
+    };
 
-    setIsProcessing(true);
-    try {
-      const sale = {
-        id: Date.now().toString(),
-        items: cartItems,
-        total,
-        date: new Date().toISOString(),
-      };
+    dispatch(addSale(sale));
+    setCurrentSale(sale);
+    dispatch(clearCart());
+    setShowPayment(false);
+  };
 
-      dispatch(addSale(sale));
-      setCurrentSale(sale);
-      dispatch(clearCart());
-    } catch (error) {
-      console.error("Error completing sale:", error);
-      alert("Error completing sale. Please try again.");
-    } finally {
-      setIsProcessing(false);
-    }
+  const calculateTotal = () => {
+    return cartItems.reduce((sum, item) => {
+      const discountedPrice = calculateDiscountedPrice(
+        item.price,
+        item.discount
+      );
+      return sum + discountedPrice * item.quantity;
+    }, 0);
   };
 
   return (
@@ -125,46 +167,12 @@ function Sales() {
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredProducts.map((product) => (
-              <div key={product.id} className="bg-white rounded-lg shadow p-4">
-                <div className="aspect-w-1 aspect-h-1 mb-4">
-                  <img
-                    src={product.image || "https://via.placeholder.com/150"}
-                    alt={product.name}
-                    className="object-cover rounded-lg"
-                  />
-                </div>
-                <h3 className="text-lg font-semibold">{product.name}</h3>
-                <p className="text-gray-600 text-sm mb-2">
-                  {product.description || "No description available"}
-                </p>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-lg font-bold">
-                    ${product.price.toFixed(2)}
-                  </span>
-                  <span
-                    className={`text-sm ${
-                      product.quantity > 0 ? "text-green-600" : "text-red-600"
-                    }`}
-                  >
-                    Stock: {product.quantity}
-                  </span>
-                </div>
-                <div className="mb-3">
-                  <Barcode
-                    value={product.sku}
-                    width={1.5}
-                    height={40}
-                    fontSize={12}
-                  />
-                </div>
-                <button
-                  className="btn btn-primary w-full"
-                  onClick={() => handleAddToCart(product)}
-                  disabled={product.quantity === 0}
-                >
-                  {product.quantity === 0 ? "Out of Stock" : "Add to Cart"}
-                </button>
-              </div>
+              <ProductCard
+                key={product.id}
+                product={product}
+                onAddToCart={handleAddToCart}
+                billType={billType}
+              />
             ))}
           </div>
         </div>
@@ -181,70 +189,51 @@ function Sales() {
                 </button>
               )}
             </div>
+
+            <BillTypeSelector
+              billType={billType}
+              onBillTypeChange={handleBillTypeChange}
+            />
+
             <div className="space-y-3">
               {cartItems.map((item) => (
-                <div
+                <CartItem
                   key={item.id}
-                  className="flex items-center justify-between p-2 border rounded"
-                >
-                  <div className="flex-1">
-                    <p className="font-medium">{item.name}</p>
-                    <p className="text-sm text-gray-600">
-                      ${item.price.toFixed(2)} x {item.quantity}
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="flex items-center space-x-1">
-                      <button
-                        className="p-1 hover:bg-gray-100 rounded"
-                        onClick={() =>
-                          handleUpdateQuantity(item, item.quantity - 1)
-                        }
-                      >
-                        <MinusIcon className="h-4 w-4" />
-                      </button>
-                      <input
-                        type="number"
-                        value={item.quantity}
-                        className="w-8 text-center"
-                        onChange={(e) => {
-                          handleUpdateQuantity(item, parseInt(e.target.value));
-                        }}
-                      />
-                      <button
-                        className="p-1 hover:bg-gray-100 rounded"
-                        onClick={() =>
-                          handleUpdateQuantity(item, item.quantity + 1)
-                        }
-                      >
-                        <PlusIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                    <button
-                      className="p-1 text-red-500 hover:bg-red-50 rounded"
-                      onClick={() => handleRemoveFromCart(item)}
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
+                  item={item}
+                  billType={billType}
+                  onUpdateQuantity={handleUpdateQuantity}
+                  onRemove={handleRemoveFromCart}
+                  onDiscountChange={handleDiscountChange}
+                />
               ))}
+
               {cartItems.length === 0 && (
                 <p className="text-gray-500 text-center py-4">Cart is empty</p>
               )}
-              <div className="border-t pt-3 mt-3">
-                <div className="flex justify-between items-center font-bold mb-4">
-                  <p>Total</p>
-                  <p>${total.toFixed(2)}</p>
+
+              {cartItems.length > 0 && (
+                <div className="border-t pt-3 mt-3">
+                  <div className="flex justify-between items-center font-bold mb-4">
+                    <p>Total</p>
+                    <p>${formatPrice(calculateTotal())}</p>
+                  </div>
+
+                  {showPayment ? (
+                    <PaymentSection
+                      total={calculateTotal()}
+                      onPaymentComplete={handlePaymentComplete}
+                    />
+                  ) : (
+                    <button
+                      className="btn btn-primary w-full"
+                      onClick={() => setShowPayment(true)}
+                      disabled={isProcessing || cartItems.length === 0}
+                    >
+                      Proceed to Payment
+                    </button>
+                  )}
                 </div>
-                <button
-                  className="btn btn-primary w-full"
-                  onClick={handleCompleteSale}
-                  disabled={isProcessing || cartItems.length === 0}
-                >
-                  {isProcessing ? "Processing..." : "Complete Sale"}
-                </button>
-              </div>
+              )}
             </div>
           </div>
         </div>
