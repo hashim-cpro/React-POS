@@ -1,17 +1,23 @@
 import { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { addProduct, updateProduct } from "../store/slices/inventorySlice";
+import { generateSKU } from "../utils/skuGenerator";
+import { calculatePrices, validatePrices } from "../utils/priceCalculator";
 
 function ProductModal({ isOpen, onClose, product: editingProduct }) {
   const dispatch = useDispatch();
   const { products } = useSelector((state) => state.inventory);
   const [error, setError] = useState("");
+  const [priceErrors, setPriceErrors] = useState([]);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [newCategory, setNewCategory] = useState("");
   const dropdownRef = useRef(null);
   const [product, setProduct] = useState({
     name: "",
-    price: "",
+    retailPrice: "",
+    wholesalePrice: "",
+    purchaseRate: "",
+    minWholesaleQty: "10",
     sku: "",
     quantity: "",
     minStockLevel: "",
@@ -20,7 +26,6 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
     image: "",
   });
 
-  // Get unique categories from existing products
   const existingCategories = [
     ...new Set(products.map((p) => p.category)),
   ].filter(Boolean);
@@ -32,14 +37,20 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
     if (editingProduct) {
       setProduct({
         ...editingProduct,
-        price: editingProduct.price.toString(),
+        retailPrice: editingProduct.retailPrice.toString(),
+        wholesalePrice: editingProduct.wholesalePrice.toString(),
+        purchaseRate: editingProduct.purchaseRate.toString(),
         quantity: editingProduct.quantity.toString(),
         minStockLevel: editingProduct.minStockLevel?.toString() || "5",
+        minWholesaleQty: editingProduct.minWholesaleQty?.toString() || "10",
       });
     } else {
       setProduct({
         name: "",
-        price: "",
+        retailPrice: "",
+        wholesalePrice: "",
+        purchaseRate: "",
+        minWholesaleQty: "10",
         sku: "",
         quantity: "",
         minStockLevel: "5",
@@ -49,6 +60,7 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
       });
     }
     setError("");
+    setPriceErrors([]);
   }, [editingProduct]);
 
   useEffect(() => {
@@ -61,6 +73,26 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handlePurchaseRateChange = (value) => {
+    const purchaseRate = parseFloat(value);
+    if (!isNaN(purchaseRate)) {
+      const { minRetailPrice, suggestedWholesalePrice } =
+        calculatePrices(purchaseRate);
+      setProduct((prev) => ({
+        ...prev,
+        purchaseRate: value,
+        retailPrice: prev.retailPrice || minRetailPrice.toFixed(2),
+        wholesalePrice:
+          prev.wholesalePrice || suggestedWholesalePrice.toFixed(2),
+      }));
+    } else {
+      setProduct((prev) => ({
+        ...prev,
+        purchaseRate: value,
+      }));
+    }
+  };
 
   const validateProduct = () => {
     const existingProduct = products.find(
@@ -77,6 +109,17 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
       return false;
     }
 
+    const errors = validatePrices(
+      parseFloat(product.purchaseRate),
+      parseFloat(product.retailPrice),
+      parseFloat(product.wholesalePrice)
+    );
+
+    if (errors.length > 0) {
+      setPriceErrors(errors);
+      return false;
+    }
+
     return true;
   };
 
@@ -86,10 +129,17 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
 
     const processedProduct = {
       ...product,
-      price: parseFloat(product.price),
+      retailPrice: parseFloat(product.retailPrice),
+      wholesalePrice: parseFloat(product.wholesalePrice),
+      purchaseRate: parseFloat(product.purchaseRate),
       quantity: parseInt(product.quantity),
       minStockLevel: parseInt(product.minStockLevel),
+      minWholesaleQty: parseInt(product.minWholesaleQty),
     };
+
+    if (!editingProduct) {
+      processedProduct.sku = generateSKU(product.category, products);
+    }
 
     if (editingProduct) {
       dispatch(updateProduct({ ...processedProduct, id: editingProduct.id }));
@@ -99,38 +149,17 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
     onClose();
   };
 
-  const handleCategorySelect = (category) => {
-    setProduct({ ...product, category });
-    setShowCategoryDropdown(false);
-  };
-
-  const handleAddNewCategory = () => {
-    if (newCategory.trim()) {
-      setProduct({ ...product, category: newCategory.trim() });
-      setNewCategory("");
-      setShowCategoryDropdown(false);
-    }
-  };
-
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 overflow-y-auto"
-      aria-labelledby="modal-title"
-      role="dialog"
-      aria-modal="true"
-    >
-      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
-        <div
-          className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-          aria-hidden="true"
-        ></div>
-        <div className="relative inline-block w-full max-w-md p-6 my-8 text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl sm:max-w-lg md:max-w-xl">
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="flex items-center justify-center min-h-screen px-4">
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75"></div>
+        <div className="relative bg-white rounded-lg p-8 max-w-2xl w-full">
           <div className="absolute top-4 right-4">
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-500 focus:outline-none"
+              className="text-gray-400 hover:text-gray-500"
             >
               <span className="sr-only">Close</span>
               <svg
@@ -159,6 +188,14 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
             </div>
           )}
 
+          {priceErrors.length > 0 && (
+            <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md">
+              {priceErrors.map((error, index) => (
+                <div key={index}>{error}</div>
+              ))}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
@@ -177,47 +214,33 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
                 />
               </div>
 
-              <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Description
-                </label>
-                <textarea
-                  className="input mt-1"
-                  value={product.description}
-                  onChange={(e) =>
-                    setProduct({ ...product, description: e.target.value })
-                  }
-                  rows="3"
-                />
-              </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Price
+                  Purchase Rate
                 </label>
                 <input
                   type="number"
                   step="0.01"
                   min="0"
                   className="input mt-1"
-                  value={product.price}
-                  onChange={(e) =>
-                    setProduct({ ...product, price: e.target.value })
-                  }
+                  value={product.purchaseRate}
+                  onChange={(e) => handlePurchaseRateChange(e.target.value)}
                   required
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  SKU
+                  Retail Price
                 </label>
                 <input
-                  type="text"
+                  type="number"
+                  step="0.01"
+                  min="0"
                   className="input mt-1"
-                  value={product.sku}
+                  value={product.retailPrice}
                   onChange={(e) =>
-                    setProduct({ ...product, sku: e.target.value })
+                    setProduct({ ...product, retailPrice: e.target.value })
                   }
                   required
                 />
@@ -225,7 +248,40 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Quantity
+                  Wholesale Price
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  className="input mt-1"
+                  value={product.wholesalePrice}
+                  onChange={(e) =>
+                    setProduct({ ...product, wholesalePrice: e.target.value })
+                  }
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Min. Wholesale Quantity
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  className="input mt-1"
+                  value={product.minWholesaleQty}
+                  onChange={(e) =>
+                    setProduct({ ...product, minWholesaleQty: e.target.value })
+                  }
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Current Stock
                 </label>
                 <input
                   type="number"
@@ -241,10 +297,7 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Minimum Stock Level
-                  <span className="ml-1 text-xs text-gray-500">
-                    (Alert Threshold)
-                  </span>
+                  Min. Stock Level
                 </label>
                 <input
                   type="number"
@@ -282,7 +335,10 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
                           <li
                             key={category}
                             className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                            onClick={() => handleCategorySelect(category)}
+                            onClick={() => {
+                              setProduct({ ...product, category });
+                              setShowCategoryDropdown(false);
+                            }}
                           >
                             {category}
                           </li>
@@ -293,21 +349,38 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
                         <p className="text-sm text-gray-500">
                           No matching categories
                         </p>
-                        {product.category && (
-                          <button
-                            type="button"
-                            className="mt-2 text-sm text-indigo-600 hover:text-indigo-500"
-                            onClick={() =>
-                              handleCategorySelect(product.category)
-                            }
-                          >
-                            Add "{product.category}" as new category
-                          </button>
-                        )}
                       </div>
                     )}
                   </div>
                 )}
+              </div>
+
+              {editingProduct && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    SKU
+                  </label>
+                  <input
+                    type="text"
+                    className="input mt-1 bg-gray-100"
+                    value={product.sku}
+                    disabled
+                  />
+                </div>
+              )}
+
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Description
+                </label>
+                <textarea
+                  className="input mt-1"
+                  value={product.description}
+                  onChange={(e) =>
+                    setProduct({ ...product, description: e.target.value })
+                  }
+                  rows="3"
+                />
               </div>
 
               <div className="sm:col-span-2">
@@ -326,18 +399,15 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
               </div>
             </div>
 
-            <div className="flex flex-col-reverse sm:flex-row justify-end space-y-2 space-y-reverse sm:space-y-0 sm:space-x-3 mt-6">
+            <div className="flex justify-end space-x-3 mt-6">
               <button
                 type="button"
                 onClick={onClose}
-                className="btn btn-secondary w-full sm:w-auto"
+                className="btn btn-secondary"
               >
                 Cancel
               </button>
-              <button
-                type="submit"
-                className="btn btn-primary w-full sm:w-auto"
-              >
+              <button type="submit" className="btn btn-primary">
                 {editingProduct ? "Save Changes" : "Add Product"}
               </button>
             </div>

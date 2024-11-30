@@ -36,6 +36,10 @@ function InventoryTable({ onEdit, searchTerm }) {
     return { color: "green", text: "In Stock" };
   };
 
+  const formatPrice = (price) => {
+    return typeof price === "number" ? price.toFixed(2) : "0.00";
+  };
+
   return (
     <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
       <div className="overflow-x-auto">
@@ -65,9 +69,9 @@ function InventoryTable({ onEdit, searchTerm }) {
               <th
                 scope="col"
                 className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer"
-                onClick={() => handleSort("price")}
+                onClick={() => handleSort("retailPrice")}
               >
-                Price
+                Prices
               </th>
               <th
                 scope="col"
@@ -107,7 +111,9 @@ function InventoryTable({ onEdit, searchTerm }) {
                     {product.sku}
                   </td>
                   <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    ${product.price.toFixed(2)}
+                    <div>Retail: ${formatPrice(product.retailPrice)}</div>
+                    <div>Wholesale: ${formatPrice(product.wholesalePrice)}</div>
+                    <div>Purchase: ${formatPrice(product.purchaseRate)}</div>
                   </td>
                   <td className="whitespace-nowrap px-3 py-4 text-sm">
                     <span
