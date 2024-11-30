@@ -20,6 +20,7 @@ node_modules
 dist
 dist-ssr
 .env
+mindmap.tldr
 *.local
 
 # Editor directories and files
