@@ -4,9 +4,9 @@ import { validateImageFile } from "../../utils/imageValidation";
 import ImagePreview from "./ImagePreview";
 import { compressImage } from "../../utils/imageCompression";
 import { uploadProfilePicture } from "../../utils/profileUpload";
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify";
 
-const ImageUploader = ({ userId, onUploadSuccess, currentImageId }) => {
+const ImageUploader = ({ userId, currentImageId }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -18,10 +18,7 @@ const ImageUploader = ({ userId, onUploadSuccess, currentImageId }) => {
     if (!file) return;
 
     try {
-      // Validate file
       await validateImageFile(file);
-
-      // Create preview
       const previewUrl = URL.createObjectURL(file);
       setPreviewUrl(previewUrl);
       setSelectedFile(file);
@@ -33,39 +30,32 @@ const ImageUploader = ({ userId, onUploadSuccess, currentImageId }) => {
   };
 
   const handleUpload = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || !userId) return;
 
     setIsLoading(true);
     setError(null);
 
     try {
-      // Compress image
       const compressedFile = await compressImage(selectedFile);
-
-      //convert the blob into a file
-      const convertedFile = new File([compressedFile], compressedFile.name, {
+      const convertedFile = new File([compressedFile], selectedFile.name, {
         type: selectedFile.type,
         lastModified: Date.now(),
       });
 
-      // Upload to Appwrite
       const { fileId, fileUrl } = await uploadProfilePicture(
         convertedFile,
         userId,
         currentImageId
       );
 
-      onUploadSuccess(fileUrl, fileId);
-      toast.success("Profile picture updated successfully!");
+      console.log("successfully uploaded image", { fileId, fileUrl });
 
-      // Reset form
-      setSelectedFile(null);
-      setPreviewUrl(null);
-      fileInputRef.current.value = "";
+      if (!fileUrl) {
+        throw new Error("Failed to get file URL");
+      }
     } catch (err) {
-      console.log(err);
+      console.log("error uploading image", err);
       setError(err.message);
-      toast.error("Failed to upload profile picture");
     } finally {
       setIsLoading(false);
     }

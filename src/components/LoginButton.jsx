@@ -8,12 +8,12 @@ import {
   verifyOTP,
 } from "../config/appwrite";
 import { setUser, clearUser, syncUserData } from "../store/slices/authSlice";
-import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { setProducts } from "../store/slices/inventorySlice";
 import { loadSales } from "../store/slices/salesSlice";
 import { setPurchases } from "../store/slices/purchaseSlice";
 import { setExpenses } from "../store/slices/expenseSlice";
 import ImageUploader from "./profile/ImageUploader";
+import ProfilePicture from "./profile/ProfilePicture";
 
 // eslint-disable-next-line react/prop-types
 export default function LoginButton({ isCollapsed }) {
@@ -44,7 +44,8 @@ export default function LoginButton({ isCollapsed }) {
           await dispatch(syncUserData(response.data.$id));
         }
       } catch (error) {
-        console.error("Session check failed:", error);
+        // Session check failed - user not logged in
+        console.log("Session check failed:", error);
       }
     };
 
@@ -54,51 +55,48 @@ export default function LoginButton({ isCollapsed }) {
   }, [dispatch, user]);
 
   const syncSessionData = async (userId) => {
-    try {
-      let hasData = false;
-      const inventory = sessionStorage.getItem("pos_inventory");
-      const sales = sessionStorage.getItem("pos_sales");
-      const purchases = sessionStorage.getItem("pos_purchases");
-      const expenses = sessionStorage.getItem("pos_expenses");
+    let hasData = false;
+    const inventory = sessionStorage.getItem("pos_inventory");
+    const sales = sessionStorage.getItem("pos_sales");
+    const purchases = sessionStorage.getItem("pos_purchases");
+    const expenses = sessionStorage.getItem("pos_expenses");
 
-      if (inventory) {
-        const data = JSON.parse(inventory);
-        if (data.products?.length > 0) {
-          dispatch(setProducts(data.products));
-          hasData = true;
-        }
+    if (inventory) {
+      const data = JSON.parse(inventory);
+      if (data.products?.length > 0) {
+        dispatch(setProducts(data.products));
+        hasData = true;
       }
-      if (sales) {
-        const data = JSON.parse(sales);
-        if (data.sales?.length > 0) {
-          dispatch(loadSales(data.sales));
-          hasData = true;
-        }
-      }
-      if (purchases) {
-        const data = JSON.parse(purchases);
-        if (data.purchases?.length > 0) {
-          dispatch(setPurchases(data.purchases));
-          hasData = true;
-        }
-      }
-      if (expenses) {
-        const data = JSON.parse(expenses);
-        if (Object.keys(data).length > 0) {
-          dispatch(setExpenses(data));
-          hasData = true;
-        }
-      }
-
-      if (hasData) {
-        await dispatch(syncUserData(userId));
-      }
-
-      sessionStorage.clear();
-    } catch (error) {
-      console.error("Error syncing session data:", error);
-      throw error;
     }
+    if (sales) {
+      const data = JSON.parse(sales);
+      if (data.sales?.length > 0) {
+        dispatch(loadSales(data.sales));
+        hasData = true;
+      }
+    }
+    if (purchases) {
+      const data = JSON.parse(purchases);
+      if (data.purchases?.length > 0) {
+        dispatch(setPurchases(data.purchases));
+        hasData = true;
+      }
+    }
+    if (expenses) {
+      const data = JSON.parse(expenses);
+      if (Object.keys(data).length > 0) {
+        dispatch(setExpenses(data));
+        hasData = true;
+      }
+    }
+
+    if (hasData) {
+      await dispatch(syncUserData(userId));
+    }
+
+    sessionStorage.clear();
+
+    throw error;
   };
 
   const handleSubmit = async (e) => {
@@ -132,8 +130,7 @@ export default function LoginButton({ isCollapsed }) {
         }
       }
     } catch (err) {
-      setError("An unexpected error occurred");
-      console.error("Auth error:", err);
+      setError("An unexpected error occurred", err);
     } finally {
       setIsLoading(false);
     }
@@ -168,8 +165,7 @@ export default function LoginButton({ isCollapsed }) {
         setError("Invalid OTP. Please try again.");
       }
     } catch (err) {
-      setError("Failed to verify OTP. Please try again.");
-      console.error("OTP verification error:", err);
+      setError("Failed to verify OTP. Please try again.", err);
     } finally {
       setIsLoading(false);
     }
@@ -185,16 +181,16 @@ export default function LoginButton({ isCollapsed }) {
         window.location.reload();
       }
     } catch (error) {
-      console.error("Logout error:", error);
+      setError("Failed to logout", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleProfilePictureSuccess = (fileUrl) => {
-    const profileUrlString = fileUrl.href;
-    console.log("Profile picture uploaded successfully:", profileUrlString);
-    dispatch(setUser({ ...user, profileUrl: profileUrlString }));
+  const handleProfilePictureSuccess = (fileUrl, fileId) => {
+    dispatch(
+      setUser({ ...user, profileUrl: fileUrl.href, profileImageId: fileId })
+    );
   };
 
   const resetForm = () => {
@@ -206,139 +202,74 @@ export default function LoginButton({ isCollapsed }) {
     setFormData({ email: "", password: "", name: "" });
   };
 
-  const renderOTPForm = () => (
-    <form onSubmit={handleVerifyOTP} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Enter OTP
-        </label>
-        <input
-          type="text"
-          required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          value={otp}
-          onChange={(e) => setOTP(e.target.value)}
-          placeholder="Enter the OTP sent to your email"
-        />
-      </div>
-
-      <button
-        type="submit"
-        disabled={isLoading}
-        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-      >
-        {isLoading ? (
-          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            ></circle>
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            ></path>
-          </svg>
-        ) : (
-          "Verify OTP"
-        )}
-      </button>
-    </form>
-  );
-
   return (
-    <>
-      <div className="mt-auto mb-4 px-4">
-        {user ? (
+    <div className="mt-auto mb-4 px-4">
+      {user ? (
+        <div
+          className={`bg-gray-50 rounded-lg p-3 ${
+            isCollapsed ? "items-center" : ""
+          }`}
+        >
           <div
-            className={`bg-gray-50 rounded-lg p-3 ${
-              isCollapsed ? "items-center" : ""
+            className={`flex items-center ${
+              isCollapsed ? "justify-center" : "mb-3"
             }`}
+            onClick={() => setIsProfileModalOpen(true)}
+            role="button"
+            tabIndex={0}
           >
-            <div
-              className={`flex items-center ${
-                isCollapsed ? "justify-center" : "mb-3"
-              }`}
-              onClick={() => setIsProfileModalOpen(true)}
-              role="button"
-              tabIndex={0}
-            >
-              {user.profileUrl ? (
-                <img
-                  src={user.profileUrl}
-                  alt="Profile"
-                  className="h-8 w-8 rounded-full object-cover"
-                />
-              ) : (
-                <UserCircleIcon className="h-8 w-8 text-gray-400" />
-              )}
-              {!isCollapsed && (
-                <div className="ml-3 overflow-hidden">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {user.name || "User"}
-                  </p>
-                  <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                  {syncing && (
-                    <p className="text-xs text-blue-500">Syncing data...</p>
-                  )}
-                </div>
-              )}
-            </div>
-            <button
-              onClick={handleLogout}
-              disabled={isLoading}
-              className={`w-full flex items-center justify-center bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors ${
-                isCollapsed ? "p-2" : "px-4 py-2"
-              }`}
-            >
-              {isLoading ? (
-                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-              ) : isCollapsed ? (
-                <span className="sr-only">Logout</span>
-              ) : (
-                "Logout"
-              )}
-            </button>
+            <ProfilePicture
+              url={user.profileUrl}
+              size={isCollapsed ? "small" : "medium"}
+            />
+            {!isCollapsed && (
+              <div className="ml-3 overflow-hidden">
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {user.name || "User"}
+                </p>
+                <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                {syncing && (
+                  <p className="text-xs text-blue-500">Syncing data...</p>
+                )}
+              </div>
+            )}
           </div>
-        ) : (
           <button
-            onClick={() => setIsModalOpen(true)}
-            className={`w-full flex items-center justify-center bg-customblue text-white rounded-lg hover:bg-blue-600 transition-colors ${
+            onClick={handleLogout}
+            disabled={isLoading}
+            className={`w-full flex items-center justify-center bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors ${
               isCollapsed ? "p-2" : "px-4 py-2"
             }`}
           >
-            {isCollapsed ? (
-              <span className="sr-only">Login</span>
+            {isLoading ? (
+              <div className="animate-spin h-5 w-5 border-2 border-white rounded-full" />
+            ) : isCollapsed ? (
+              <span className="sr-only">Logout</span>
             ) : (
-              "Login / Register"
+              "Logout"
             )}
           </button>
-        )}
-      </div>
+        </div>
+      ) : (
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className={`w-full flex items-center justify-center bg-customblue text-white rounded-lg hover:bg-blue-600 transition-colors ${
+            isCollapsed ? "p-2" : "px-4 py-2"
+          }`}
+        >
+          {isCollapsed ? (
+            <span className="sr-only">Login</span>
+          ) : (
+            "Login / Register"
+          )}
+        </button>
+      )}
 
       {/* Profile Modal */}
       {isProfileModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4">
-            <div className="fixed inset-0 bg-black opacity-50"></div>
+            <div className="fixed inset-0 bg-black opacity-50" />
             <div className="relative bg-white rounded-lg p-8 max-w-md w-full">
               <button
                 onClick={() => setIsProfileModalOpen(false)}
@@ -365,7 +296,7 @@ export default function LoginButton({ isCollapsed }) {
                 <ImageUploader
                   userId={user?.id}
                   onUploadSuccess={handleProfilePictureSuccess}
-                  currentImageUrl={user?.profileUrl}
+                  currentImageId={user?.profileImageId}
                 />
                 <div className="space-y-4">
                   <div>
@@ -391,7 +322,7 @@ export default function LoginButton({ isCollapsed }) {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4">
-            <div className="fixed inset-0 bg-black opacity-50"></div>
+            <div className="fixed inset-0 bg-black opacity-50" />
             <div className="relative bg-white rounded-lg p-8 max-w-md w-full">
               <button
                 onClick={resetForm}
@@ -424,7 +355,33 @@ export default function LoginButton({ isCollapsed }) {
               )}
 
               {showOTPInput ? (
-                renderOTPForm()
+                <form onSubmit={handleVerifyOTP} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Enter OTP
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      value={otp}
+                      onChange={(e) => setOTP(e.target.value)}
+                      placeholder="Enter the OTP sent to your email"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    {isLoading ? (
+                      <div className="animate-spin h-5 w-5 border-2 border-white rounded-full" />
+                    ) : (
+                      "Verify OTP"
+                    )}
+                  </button>
+                </form>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {!isLogin && (
@@ -480,21 +437,7 @@ export default function LoginButton({ isCollapsed }) {
                     className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
                     {isLoading ? (
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
+                      <div className="animate-spin h-5 w-5 border-2 border-white rounded-full" />
                     ) : isLogin ? (
                       "Login"
                     ) : (
@@ -522,6 +465,6 @@ export default function LoginButton({ isCollapsed }) {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

@@ -5,26 +5,35 @@ const BUCKET_ID = import.meta.env.VITE_PROFILE_PICTURES_BUCKET_ID;
 
 export const uploadProfilePicture = async (file, userId, currentImageId) => {
   try {
-    // Delete old profile picture if it exists
     if (currentImageId) {
       try {
         await storage.deleteFile(BUCKET_ID, currentImageId);
       } catch (error) {
-        console.error("Failed to delete old profile picture:", error);
+        // Continue even if delete fails
+        console.error(
+          `Failed to delete previous profile picture: ${error.message}`
+        );
       }
     }
 
-    // Upload new file
     const fileId = ID.unique();
-    console.log("File:", file, "fileid", fileId);
-    const response = await storage.createFile(BUCKET_ID, fileId, file);
+    await storage.createFile(BUCKET_ID, fileId, file);
 
-    // Get file URL
-    const fileUrl = storage.getFileView(BUCKET_ID, fileId);
-
-    return { fileId: response.$id, fileUrl };
+    // Get the file URL using the preview endpoint
+    const fileUrl = storage.getFilePreview(
+      BUCKET_ID,
+      fileId,
+      400, // width
+      400, // height
+      "center", // gravity
+      100, // quality
+      1, // border
+      "ffffff", // background color
+      "jpg" // output format
+    ).href;
+    console.log("Uploaf file function", fileId, fileUrl);
+    return { fileId, fileUrl };
   } catch (error) {
-    console.log("Failed to upload profile picture:", error);
-    throw new Error("Failed to upload profile picture: " + error.message);
+    throw new Error(`Failed to upload profile picture: ${error.message}`);
   }
 };
