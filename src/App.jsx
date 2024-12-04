@@ -23,13 +23,12 @@ export default function App() {
         console.error("Session check failed:", error);
       }
     };
-    console.log(import.meta.env.BASE_URL);
     checkSession();
   }, []);
 
   return (
     <Provider store={store}>
-      <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <BrowserRouter>
         <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={<Dashboard />} />
