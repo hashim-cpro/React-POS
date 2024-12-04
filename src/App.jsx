@@ -23,6 +23,7 @@ export default function App() {
         console.error("Session check failed:", error);
       }
     };
+    console.log(import.meta.env.BASE_URL);
     checkSession();
   }, []);
 
