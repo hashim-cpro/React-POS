@@ -13,10 +13,12 @@ import { setProducts } from "../store/slices/inventorySlice";
 import { loadSales } from "../store/slices/salesSlice";
 import { setPurchases } from "../store/slices/purchaseSlice";
 import { setExpenses } from "../store/slices/expenseSlice";
+import ImageUploader from "./profile/ImageUploader";
 
 // eslint-disable-next-line react/prop-types
 export default function LoginButton({ isCollapsed }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState("");
@@ -189,6 +191,12 @@ export default function LoginButton({ isCollapsed }) {
     }
   };
 
+  const handleProfilePictureSuccess = (fileUrl) => {
+    const profileUrlString = fileUrl.href;
+    console.log("Profile picture uploaded successfully:", profileUrlString);
+    dispatch(setUser({ ...user, profileUrl: profileUrlString }));
+  };
+
   const resetForm = () => {
     setIsModalOpen(false);
     setShowOTPInput(false);
@@ -255,8 +263,19 @@ export default function LoginButton({ isCollapsed }) {
               className={`flex items-center ${
                 isCollapsed ? "justify-center" : "mb-3"
               }`}
+              onClick={() => setIsProfileModalOpen(true)}
+              role="button"
+              tabIndex={0}
             >
-              <UserCircleIcon className="h-8 w-8 text-gray-400" />
+              {user.profileUrl ? (
+                <img
+                  src={user.profileUrl}
+                  alt="Profile"
+                  className="h-8 w-8 rounded-full object-cover"
+                />
+              ) : (
+                <UserCircleIcon className="h-8 w-8 text-gray-400" />
+              )}
               {!isCollapsed && (
                 <div className="ml-3 overflow-hidden">
                   <p className="text-sm font-medium text-gray-900 truncate">
@@ -315,6 +334,60 @@ export default function LoginButton({ isCollapsed }) {
         )}
       </div>
 
+      {/* Profile Modal */}
+      {isProfileModalOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4">
+            <div className="fixed inset-0 bg-black opacity-50"></div>
+            <div className="relative bg-white rounded-lg p-8 max-w-md w-full">
+              <button
+                onClick={() => setIsProfileModalOpen(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-500"
+              >
+                <span className="sr-only">Close</span>
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+
+              <h2 className="text-2xl font-bold mb-6">Profile Settings</h2>
+              <div className="space-y-6">
+                <ImageUploader
+                  userId={user?.id}
+                  onUploadSuccess={handleProfilePictureSuccess}
+                  currentImageUrl={user?.profileUrl}
+                />
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Name
+                    </label>
+                    <p className="mt-1 text-gray-900">{user?.name}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Email
+                    </label>
+                    <p className="mt-1 text-gray-900">{user?.email}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Login/Register Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4">

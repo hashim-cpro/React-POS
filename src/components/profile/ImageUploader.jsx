@@ -42,9 +42,15 @@ const ImageUploader = ({ userId, onUploadSuccess, currentImageId }) => {
       // Compress image
       const compressedFile = await compressImage(selectedFile);
 
+      //convert the blob into a file
+      const convertedFile = new File([compressedFile], compressedFile.name, {
+        type: selectedFile.type,
+        lastModified: Date.now(),
+      });
+
       // Upload to Appwrite
       const { fileId, fileUrl } = await uploadProfilePicture(
-        compressedFile,
+        convertedFile,
         userId,
         currentImageId
       );
@@ -57,6 +63,7 @@ const ImageUploader = ({ userId, onUploadSuccess, currentImageId }) => {
       setPreviewUrl(null);
       fileInputRef.current.value = "";
     } catch (err) {
+      console.log(err);
       setError(err.message);
       toast.error("Failed to upload profile picture");
     } finally {
