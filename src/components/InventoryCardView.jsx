@@ -1,4 +1,6 @@
 import { useSelector } from "react-redux";
+import PropTypes from "prop-types";
+import { formatPrice } from "../utils/priceFormatters";
 
 function InventoryCardView({ onEdit, searchTerm }) {
   const { products } = useSelector((state) => state.inventory);
@@ -22,6 +24,10 @@ function InventoryCardView({ onEdit, searchTerm }) {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {filteredProducts.map((product) => {
         const stockStatus = getStockStatus(product);
+        const retailPrice = product.retailPrice || 0;
+        const wholesalePrice = product.wholesalePrice || 0;
+        const purchaseRate = product.purchaseRate || 0;
+
         return (
           <div
             key={product.id}
@@ -37,10 +43,27 @@ function InventoryCardView({ onEdit, searchTerm }) {
             <div className="p-4">
               <h3 className="text-lg font-semibold">{product.name}</h3>
               <p className="text-sm text-gray-500">{product.category}</p>
-              <div className="mt-2 flex justify-between items-center">
-                <span className="text-lg font-bold">
-                  ${product.price.toFixed(2)}
-                </span>
+              <div className="mt-2 space-y-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Retail:</span>
+                  <span className="font-medium">
+                    ${formatPrice(retailPrice)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Wholesale:</span>
+                  <span className="font-medium">
+                    ${formatPrice(wholesalePrice)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Purchase:</span>
+                  <span className="font-medium">
+                    ${formatPrice(purchaseRate)}
+                  </span>
+                </div>
+              </div>
+              <div className="mt-3 flex justify-between items-center">
                 <span
                   className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
                     stockStatus.color === "green"
@@ -54,9 +77,9 @@ function InventoryCardView({ onEdit, searchTerm }) {
                 </span>
               </div>
               <p className="text-sm text-gray-500 mt-2">SKU: {product.sku}</p>
-              {product.quantity <= product.minStockLevel && (
+              {product.quantity <= (product.minStockLevel || 5) && (
                 <p className="text-sm text-yellow-600 mt-1">
-                  Below minimum stock level ({product.minStockLevel})
+                  Below minimum stock level ({product.minStockLevel || 5})
                 </p>
               )}
               <div className="mt-4">
@@ -79,5 +102,14 @@ function InventoryCardView({ onEdit, searchTerm }) {
     </div>
   );
 }
+
+InventoryCardView.propTypes = {
+  onEdit: PropTypes.func.isRequired,
+  searchTerm: PropTypes.string,
+};
+
+InventoryCardView.defaultProps = {
+  searchTerm: "",
+};
 
 export default InventoryCardView;
