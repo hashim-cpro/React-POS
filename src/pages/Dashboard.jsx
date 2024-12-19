@@ -10,7 +10,6 @@ function Dashboard() {
   const { products } = useSelector((state) => state.inventory);
   const { todayTotal } = useSelector((state) => state.sales);
   const { sales } = useSelector((state) => state.sales);
-  // const { purchases } = useSelector((state) => state.purchases);
 
   const lowStockItems = products.filter(
     (p) => p.quantity <= (p.minStockLevel || 5)
@@ -77,17 +76,17 @@ function Dashboard() {
                           #{sale.id}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {sale.items.reduce(
-                            (sum, item) => sum + item.quantity,
+                          {sale.items?.reduce(
+                            (sum, item) => sum + (item?.quantity || 0),
                             0
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          ${sale.total.toFixed(2)}
+                          ${(sale.total || 0).toFixed(2)}
                         </td>
                       </tr>
                     ))}
-                    {sales.length === 0 && (
+                    {!sales?.length && (
                       <tr>
                         <td
                           colSpan="4"

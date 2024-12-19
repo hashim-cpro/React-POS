@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 import ReceiptTemplate from "./ReceiptTemplate";
 
+// eslint-disable-next-line react/prop-types
 function ReceiptPreview({ sale, paymentMethod, onClose }) {
   const componentRef = useRef();
 
@@ -22,11 +23,7 @@ function ReceiptPreview({ sale, paymentMethod, onClose }) {
   });
 
   const handleSaveAsPDF = () => {
-    const printOptions = {
-      ...handlePrint,
-      print: window.print,
-    };
-    printOptions();
+    handlePrint();
   };
 
   if (!sale) return null;

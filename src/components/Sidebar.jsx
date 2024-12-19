@@ -55,7 +55,7 @@ export default function Sidebar() {
           src={Logo}
           alt="Logo"
           className={`transition-all duration-300 ${
-            isCollapsed ? "w-12" : "w-full"
+            isCollapsed ? "w-12" : "w-[113px]"
           }`}
         />
       </div>
