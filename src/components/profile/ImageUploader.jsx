@@ -4,7 +4,6 @@ import { validateImageFile } from "../../utils/imageValidation";
 import ImagePreview from "./ImagePreview";
 import { compressImage } from "../../utils/imageCompression";
 import { uploadProfilePicture } from "../../utils/profileUpload";
-// import { toast } from "react-toastify";
 
 const ImageUploader = ({ userId, currentImageId, onUploadSuccess }) => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -42,19 +41,22 @@ const ImageUploader = ({ userId, currentImageId, onUploadSuccess }) => {
         lastModified: Date.now(),
       });
 
-      const { fileId, fileUrl } = await uploadProfilePicture(
+      const { fileUrl } = await uploadProfilePicture(
         convertedFile,
         userId,
         currentImageId
       );
-      setPreviewUrl(fileUrl);
-      console.log("successfully uploaded image", { fileId, fileUrl });
-      onUploadSuccess();
+
       if (!fileUrl) {
         throw new Error("Failed to get file URL");
       }
+
+      setPreviewUrl(fileUrl);
+      onUploadSuccess(fileUrl);
+      setSelectedFile(null);
+      fileInputRef.current.value = "";
     } catch (err) {
-      console.log("error uploading image", err);
+      console.error("Error uploading image:", err);
       setError(err.message);
     } finally {
       setIsLoading(false);

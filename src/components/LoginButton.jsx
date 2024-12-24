@@ -36,7 +36,7 @@ export default function LoginButton({ isCollapsed }) {
   const user = useSelector((state) => state.auth.user);
   const syncing = useSelector((state) => state.auth.syncing);
   const profilePictureUrl = useSelector(
-    (state) => state.userData?.profilePictureUrl
+    (state) => state.userdata.profilePictureUrl
   );
   console.log(profilePictureUrl);
   useEffect(() => {

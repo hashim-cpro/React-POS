@@ -1,7 +1,11 @@
-import { storage } from "../config/appwrite";
-import { ID } from "appwrite";
+import { storage, databases } from "../config/appwrite";
+import { ID, Query } from "appwrite";
+import { store } from "../store";
+import { updateProfilePictureUrl } from "../store/slices/userSlice";
 
 const BUCKET_ID = import.meta.env.VITE_PROFILE_PICTURES_BUCKET_ID;
+const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
+const USERS_COLLECTION = import.meta.env.VITE_USERS_COLLECTION;
 
 export const uploadProfilePicture = async (file, userId, currentImageId) => {
   try {
@@ -9,7 +13,6 @@ export const uploadProfilePicture = async (file, userId, currentImageId) => {
       try {
         await storage.deleteFile(BUCKET_ID, currentImageId);
       } catch (error) {
-        // Continue even if delete fails
         console.error(
           `Failed to delete previous profile picture: ${error.message}`
         );
@@ -19,7 +22,7 @@ export const uploadProfilePicture = async (file, userId, currentImageId) => {
     const fileId = ID.unique();
     await storage.createFile(BUCKET_ID, fileId, file);
 
-    // Get the file URL using the preview endpoint
+    // Updated preview parameters with correct border radius
     const fileUrl = storage.getFilePreview(
       BUCKET_ID,
       fileId,
@@ -27,10 +30,43 @@ export const uploadProfilePicture = async (file, userId, currentImageId) => {
       400, // height
       "center", // gravity
       100, // quality
-      1, // border
+      1, // border radius (0-4000)
       "ffffff", // background color
-      "jpg" // output format
+      "400" // border radius
     ).href;
+
+    store.dispatch(updateProfilePictureUrl(fileUrl));
+
+    try {
+      const response = await databases.listDocuments(
+        DATABASE_ID,
+        USERS_COLLECTION,
+        [Query.equal("userId", userId)]
+      );
+
+      const userData = {
+        data: JSON.stringify({ profilePictureUrl: fileUrl }),
+        userId,
+      };
+
+      if (response.documents.length > 0) {
+        await databases.updateDocument(
+          DATABASE_ID,
+          USERS_COLLECTION,
+          response.documents[0].$id,
+          userData
+        );
+      } else {
+        await databases.createDocument(
+          DATABASE_ID,
+          USERS_COLLECTION,
+          ID.unique(),
+          userData
+        );
+      }
+    } catch (error) {
+      console.error("Failed to update user data:", error);
+    }
 
     return { fileId, fileUrl };
   } catch (error) {
