@@ -31,7 +31,7 @@ export const uploadProfilePicture = async (file, userId, currentImageId) => {
       "ffffff", // background color
       "jpg" // output format
     ).href;
-    console.log("Uploaf file function", fileId, fileUrl);
+
     return { fileId, fileUrl };
   } catch (error) {
     throw new Error(`Failed to upload profile picture: ${error.message}`);

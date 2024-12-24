@@ -5,6 +5,7 @@ import { setProducts } from "./inventorySlice";
 import { setPurchases } from "./purchaseSlice";
 import { loadSales } from "./salesSlice";
 import { setExpenses } from "./expenseSlice";
+// import { updateProfilePictureUrl } from "./userSlice";
 
 const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
 const COLLECTION_IDS = {
@@ -12,6 +13,7 @@ const COLLECTION_IDS = {
   sales: import.meta.env.VITE_SALES_COLLECTION,
   purchases: import.meta.env.VITE_PURCHASES_COLLECTION,
   expenses: import.meta.env.VITE_EXPENSES_COLLECTION,
+  user: import.meta.env.VITE_USERS_COLLECTION,
 };
 
 const fetchCollectionData = async (collectionId, userId) => {
@@ -36,11 +38,12 @@ export const syncUserData = createAsyncThunk(
     if (!userId) return false;
 
     try {
-      const [inventory, sales, purchases, expenses] = await Promise.all([
+      const [inventory, sales, purchases, expenses, user] = await Promise.all([
         fetchCollectionData(COLLECTION_IDS.inventory, userId),
         fetchCollectionData(COLLECTION_IDS.sales, userId),
         fetchCollectionData(COLLECTION_IDS.purchases, userId),
         fetchCollectionData(COLLECTION_IDS.expenses, userId),
+        fetchCollectionData(COLLECTION_IDS.user, userId),
       ]);
 
       if (inventory?.products) {
@@ -54,6 +57,10 @@ export const syncUserData = createAsyncThunk(
       }
       if (expenses) {
         dispatch(setExpenses(expenses));
+      }
+      if (user?.profilePictureUrl) {
+        // dispatch(updateProfilePictureUrl(user.profilePictureUrl));
+        //so i don't exactly know what's happening so we'll see what I have to do in order for it to do something let's see in the morning what I can do. Before doing anything it would be better if I just read the whole code thorougly and then decided to twinker with it. We'll see what happens in the morning.
       }
 
       return true;

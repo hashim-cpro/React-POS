@@ -11,23 +11,23 @@ const ProfilePicture = ({ url, size = "medium", className = "" }) => {
   const baseClasses = "rounded-full object-cover";
   const finalClasses = `${baseClasses} ${sizeClasses[size]} ${className}`;
 
-  if (!url) {
+  if (url === "") {
     return <UserCircleIcon className={finalClasses} />;
+  } else {
+    return (
+      <img
+        src={url}
+        alt="Profile"
+        className={finalClasses}
+        loading="lazy"
+        onError={(e) => {
+          e.target.onerror = null;
+          e.target.src =
+            "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'/>";
+        }}
+      />
+    );
   }
-
-  return (
-    <img
-      src={url}
-      alt="Profile"
-      className={finalClasses}
-      loading="lazy"
-      onError={(e) => {
-        e.target.onerror = null;
-        e.target.src =
-          "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'/>";
-      }}
-    />
-  );
 };
 
 ProfilePicture.propTypes = {

@@ -7,6 +7,7 @@ const COLLECTION_IDS = {
   sales: import.meta.env.VITE_SALES_COLLECTION,
   purchases: import.meta.env.VITE_PURCHASES_COLLECTION,
   expenses: import.meta.env.VITE_EXPENSES_COLLECTION,
+  user: import.meta.env.VITE_USERS_COLLECTION,
 };
 
 const SYNC_DEBOUNCE_TIME = 2000; // 2 seconds
@@ -52,6 +53,7 @@ const performSync = async (userId, state) => {
       syncWithAppwrite(userId, COLLECTION_IDS.sales, state.sales),
       syncWithAppwrite(userId, COLLECTION_IDS.purchases, state.purchases),
       syncWithAppwrite(userId, COLLECTION_IDS.expenses, state.expenses),
+      syncWithAppwrite(userId, COLLECTION_IDS.user, state.userdata),
     ]);
   } catch (error) {
     console.error("Sync error:", error);
@@ -71,6 +73,7 @@ export const localStorageMiddleware = (store) => (next) => (action) => {
     sessionStorage.setItem("pos_sales", JSON.stringify(state.sales));
     sessionStorage.setItem("pos_purchases", JSON.stringify(state.purchases));
     sessionStorage.setItem("pos_expenses", JSON.stringify(state.expenses));
+    sessionStorage.setItem("pos_user", JSON.stringify(state.userdata));
   } catch (error) {
     console.error("Session storage error:", error);
   }

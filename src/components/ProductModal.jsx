@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react/prop-types */
 import { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { addProduct, updateProduct } from "../store/slices/inventorySlice";
@@ -12,6 +14,8 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [newCategory, setNewCategory] = useState("");
   const dropdownRef = useRef(null);
+  const [minRetailPrice, setminRetailPrice] = useState(0);
+  const [suggestedWholesalePrice, setsuggestedWholesalePrice] = useState(0);
   const [product, setProduct] = useState({
     name: "",
     retailPrice: "",
@@ -41,8 +45,8 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
         wholesalePrice: editingProduct.wholesalePrice.toString(),
         purchaseRate: editingProduct.purchaseRate.toString(),
         quantity: editingProduct.quantity.toString(),
-        minStockLevel: editingProduct.minStockLevel?.toString() || "5",
-        minWholesaleQty: editingProduct.minWholesaleQty?.toString() || "10",
+        minStockLevel: editingProduct.minStockLevel.toString() || "5",
+        minWholesaleQty: editingProduct.minWholesaleQty.toString() || "10",
       });
     } else {
       setProduct({
@@ -77,14 +81,15 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
   const handlePurchaseRateChange = (value) => {
     const purchaseRate = parseFloat(value);
     if (!isNaN(purchaseRate)) {
-      const { minRetailPrice, suggestedWholesalePrice } =
-        calculatePrices(purchaseRate);
+      const response = calculatePrices(purchaseRate);
+      setminRetailPrice(Math.floor(response.minRetailPrice));
+      setsuggestedWholesalePrice(Math.floor(response.suggestedWholesalePrice));
+
       setProduct((prev) => ({
         ...prev,
         purchaseRate: value,
-        retailPrice: prev.retailPrice || minRetailPrice.toFixed(2),
-        wholesalePrice:
-          prev.wholesalePrice || suggestedWholesalePrice.toFixed(2),
+        retailPrice: prev.retailPrice,
+        wholesalePrice: prev.wholesalePrice,
       }));
     } else {
       setProduct((prev) => ({
@@ -220,7 +225,7 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
                 </label>
                 <input
                   type="number"
-                  step="0.01"
+                  step="1"
                   min="0"
                   className="input mt-1"
                   value={product.purchaseRate}
@@ -235,10 +240,11 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
                 </label>
                 <input
                   type="number"
-                  step="0.01"
+                  step="1"
                   min="0"
                   className="input mt-1"
                   value={product.retailPrice}
+                  placeholder={">=" + minRetailPrice}
                   onChange={(e) =>
                     setProduct({ ...product, retailPrice: e.target.value })
                   }
@@ -252,10 +258,11 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
                 </label>
                 <input
                   type="number"
-                  step="0.01"
+                  step="1"
                   min="0"
                   className="input mt-1"
                   value={product.wholesalePrice}
+                  placeholder={">=" + suggestedWholesalePrice}
                   onChange={(e) =>
                     setProduct({ ...product, wholesalePrice: e.target.value })
                   }

@@ -6,7 +6,7 @@ import { compressImage } from "../../utils/imageCompression";
 import { uploadProfilePicture } from "../../utils/profileUpload";
 // import { toast } from "react-toastify";
 
-const ImageUploader = ({ userId, currentImageId }) => {
+const ImageUploader = ({ userId, currentImageId, onUploadSuccess }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -47,9 +47,9 @@ const ImageUploader = ({ userId, currentImageId }) => {
         userId,
         currentImageId
       );
-
+      setPreviewUrl(fileUrl);
       console.log("successfully uploaded image", { fileId, fileUrl });
-
+      onUploadSuccess();
       if (!fileUrl) {
         throw new Error("Failed to get file URL");
       }

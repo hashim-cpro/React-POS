@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
 import PropTypes from "prop-types";
 import { formatPrice } from "../utils/priceFormatters";
-
+//This is using the old default props which is giving the warning
 function InventoryCardView({ onEdit, searchTerm }) {
   const { products } = useSelector((state) => state.inventory);
 

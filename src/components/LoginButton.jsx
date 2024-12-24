@@ -14,6 +14,7 @@ import { setPurchases } from "../store/slices/purchaseSlice";
 import { setExpenses } from "../store/slices/expenseSlice";
 import ImageUploader from "./profile/ImageUploader";
 import ProfilePicture from "./profile/ProfilePicture";
+import { updateProfilePictureUrl } from "../store/slices/userSlice";
 
 // eslint-disable-next-line react/prop-types
 export default function LoginButton({ isCollapsed }) {
@@ -34,7 +35,10 @@ export default function LoginButton({ isCollapsed }) {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
   const syncing = useSelector((state) => state.auth.syncing);
-
+  const profilePictureUrl = useSelector(
+    (state) => state.userData?.profilePictureUrl
+  );
+  console.log(profilePictureUrl);
   useEffect(() => {
     const checkSession = async () => {
       try {
@@ -187,10 +191,8 @@ export default function LoginButton({ isCollapsed }) {
     }
   };
 
-  const handleProfilePictureSuccess = (fileUrl, fileId) => {
-    dispatch(
-      setUser({ ...user, profileUrl: fileUrl.href, profileImageId: fileId })
-    );
+  const handleProfilePictureSuccess = (fileUrl) => {
+    dispatch(updateProfilePictureUrl(fileUrl));
   };
 
   const resetForm = () => {
@@ -219,7 +221,7 @@ export default function LoginButton({ isCollapsed }) {
             tabIndex={0}
           >
             <ProfilePicture
-              url={user.profileUrl}
+              url={profilePictureUrl}
               size={isCollapsed ? "small" : "medium"}
             />
             {!isCollapsed && (
