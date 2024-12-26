@@ -10,7 +10,7 @@ import Sales from "./pages/Sales";
 import Inventory from "./pages/Inventory";
 import Purchases from "./pages/Purchases";
 import Expenses from "./pages/Expenses";
-
+import Settings from "./pages/Settings";
 export default function App() {
   useEffect(() => {
     const checkSession = async () => {
@@ -36,6 +36,7 @@ export default function App() {
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/purchases" element={<Purchases />} />
             <Route path="/expenses" element={<Expenses />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -5,6 +5,7 @@ export default {
     extend: {
       fontFamily: {
         phantom: ["Phantom Sans", "sans-serif"], // Adding Phantom Sans as a custom font
+        poppins: ["Poppins", "sans-serif"], // Adding Poppins as a custom font
       },
       colors: {
         customdarker: "#121217",

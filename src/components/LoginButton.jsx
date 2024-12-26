@@ -15,6 +15,8 @@ import { setExpenses } from "../store/slices/expenseSlice";
 import ImageUploader from "./profile/ImageUploader";
 import ProfilePicture from "./profile/ProfilePicture";
 import { updateProfilePictureUrl } from "../store/slices/userSlice";
+import triangle from "../assets/triangle.svg";
+import editIcon from "../assets/edit.svg";
 
 // eslint-disable-next-line react/prop-types
 export default function LoginButton({ isCollapsed }) {
@@ -38,7 +40,6 @@ export default function LoginButton({ isCollapsed }) {
   const profilePictureUrl = useSelector(
     (state) => state.userdata.profilePictureUrl
   );
-  console.log(profilePictureUrl);
   useEffect(() => {
     const checkSession = async () => {
       try {
@@ -205,15 +206,20 @@ export default function LoginButton({ isCollapsed }) {
   };
 
   return (
-    <div className="mt-auto mb-4 px-4">
+    <div className="fixed top-[65px] right-[24px] shadow rounded-[10px] p-0 z-20">
       {user ? (
         <div
-          className={`bg-gray-50 rounded-lg p-3 ${
+          className={`p-3 w-[332px]  bg-white rounded-[10px] relative${
             isCollapsed ? "items-center" : ""
           }`}
         >
+          <img
+            src={triangle}
+            alt="▲"
+            className="absolute top-[-8px] right-[21px]"
+          />
           <div
-            className={`flex items-center ${
+            className={`flex items-center relative ${
               isCollapsed ? "justify-center" : "mb-3"
             }`}
             onClick={() => setIsProfileModalOpen(true)}
@@ -224,12 +230,17 @@ export default function LoginButton({ isCollapsed }) {
               url={profilePictureUrl}
               size={isCollapsed ? "small" : "medium"}
             />
+            <span className="h-[18px] w-[18px] rounded-full bg-[#9747ff] flex align-middle justify-center absolute top-[50px] left-[53px] z-10">
+              <img src={editIcon} alt="edit" className="w-[10px]" />
+            </span>
             {!isCollapsed && (
               <div className="ml-3 overflow-hidden">
-                <p className="text-sm font-medium text-gray-900 truncate">
+                <p className="text-[20px] font-poppins font-[500] text-black truncate m-0">
                   {user.name || "User"}
                 </p>
-                <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                <p className="text-[13px] font-[400] text-[#9747ff] truncate m-[-7px_0_0_0]">
+                  {user.email}
+                </p>
                 {syncing && (
                   <p className="text-xs text-blue-500">Syncing data...</p>
                 )}
