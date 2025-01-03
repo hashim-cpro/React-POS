@@ -1,5 +1,10 @@
 import { databases } from "../../config/appwrite";
 import { Query } from "appwrite";
+import { setProducts } from "../slices/inventorySlice";
+import { loadSales } from "../slices/salesSlice";
+import { setPurchases } from "../slices/purchaseSlice";
+import { setExpenses } from "../slices/expenseSlice";
+import { updateProfilePictureUrl } from "../slices/userSlice";
 
 const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
 const COLLECTION_IDS = {
@@ -10,23 +15,143 @@ const COLLECTION_IDS = {
   user: import.meta.env.VITE_USERS_COLLECTION,
 };
 
-const SYNC_DEBOUNCE_TIME = 2000; // 2 seconds
+const SYNC_DEBOUNCE_TIME = 2000;
 let syncTimeout = null;
 let isSyncing = false;
-// let hasInitialDataLoaded = false;
+let hasInitialDataLoaded = false;
+
+// Default state structures
+const DEFAULT_STATES = {
+  inventory: { products: [] },
+  sales: { sales: [], todayTotal: 0 },
+  purchases: { purchases: [] },
+  expenses: {
+    expenses: [],
+    categories: [
+      "Rent",
+      "Salaries",
+      "Utilities",
+      "Supplies",
+      "Marketing",
+      "Insurance",
+      "Maintenance",
+      "Other",
+    ],
+  },
+  user: { profilePictureUrl: "" },
+};
+
+const fetchInitialData = async (userId, store) => {
+  if (!userId || hasInitialDataLoaded) return;
+
+  try {
+    const responses = await Promise.all([
+      databases.listDocuments(DATABASE_ID, COLLECTION_IDS.inventory, [
+        Query.equal("userId", userId),
+      ]),
+      databases.listDocuments(DATABASE_ID, COLLECTION_IDS.sales, [
+        Query.equal("userId", userId),
+      ]),
+      databases.listDocuments(DATABASE_ID, COLLECTION_IDS.purchases, [
+        Query.equal("userId", userId),
+      ]),
+      databases.listDocuments(DATABASE_ID, COLLECTION_IDS.expenses, [
+        Query.equal("userId", userId),
+      ]),
+      databases.listDocuments(DATABASE_ID, COLLECTION_IDS.user, [
+        Query.equal("userId", userId),
+      ]),
+    ]);
+
+    responses.forEach((response, index) => {
+      try {
+        let data = DEFAULT_STATES[Object.keys(COLLECTION_IDS)[index]];
+
+        if (response.documents.length > 0) {
+          const parsedData = JSON.parse(response.documents[0].data);
+          data = { ...data, ...parsedData };
+        }
+
+        switch (index) {
+          case 0: // inventory
+            store.dispatch(setProducts(data.products || []));
+            break;
+          case 1: // sales
+            store.dispatch(loadSales(data.sales || []));
+            break;
+          case 2: // purchases
+            store.dispatch(setPurchases(data.purchases || []));
+            break;
+          case 3: // expenses
+            store.dispatch(setExpenses(data));
+            break;
+          case 4: // user
+            store.dispatch(
+              updateProfilePictureUrl(data.profilePictureUrl || "")
+            );
+            break;
+        }
+      } catch (error) {
+        console.error(`Error processing data for collection ${index}:`, error);
+        // Use default state if parsing fails
+        const defaultData = DEFAULT_STATES[Object.keys(COLLECTION_IDS)[index]];
+        switch (index) {
+          case 0:
+            store.dispatch(setProducts(defaultData.products));
+            break;
+          case 1:
+            store.dispatch(loadSales(defaultData.sales));
+            break;
+          case 2:
+            store.dispatch(setPurchases(defaultData.purchases));
+            break;
+          case 3:
+            store.dispatch(setExpenses(defaultData));
+            break;
+          case 4:
+            store.dispatch(
+              updateProfilePictureUrl(defaultData.profilePictureUrl)
+            );
+            break;
+        }
+      }
+    });
+
+    hasInitialDataLoaded = true;
+  } catch (error) {
+    console.error("Error fetching initial data:", error);
+    // Initialize with default states if fetch fails
+    Object.values(DEFAULT_STATES).forEach((defaultState, index) => {
+      switch (index) {
+        case 0:
+          store.dispatch(setProducts(defaultState.products));
+          break;
+        case 1:
+          store.dispatch(loadSales(defaultState.sales));
+          break;
+        case 2:
+          store.dispatch(setPurchases(defaultState.purchases));
+          break;
+        case 3:
+          store.dispatch(setExpenses(defaultState));
+          break;
+        case 4:
+          store.dispatch(
+            updateProfilePictureUrl(defaultState.profilePictureUrl)
+          );
+          break;
+      }
+    });
+  }
+};
 
 const syncWithAppwrite = async (userId, collectionId, data) => {
-  if (!userId || !collectionId) return;
+  if (!userId || !collectionId || !hasInitialDataLoaded) return;
 
   try {
     const response = await databases.listDocuments(DATABASE_ID, collectionId, [
       Query.equal("userId", userId),
     ]);
-    console.log(response);
-    // Don't sync empty data if we already have data in Appwrite
-    // if (Object.keys(data).length === 0 && response.documents.length > 0) {
-    //   return;
-    // }
 
     const documentData = { data: JSON.stringify(data) };
 
@@ -50,34 +175,10 @@ const syncWithAppwrite = async (userId, collectionId, data) => {
 };
 
 const performSync = async (userId, state) => {
-  if (isSyncing || !userId) return;
+  if (isSyncing || !userId || !hasInitialDataLoaded) return;
 
   try {
     isSyncing = true;
-    //This is the function doing all the syncing function, I have to make a logic here that first fetch the data from the documents and set the them as the initial state and then sync the data with the appwrite if the data is changed
-
-    // If initial data hasn't been loaded and this is not a data loading action, skip sync
-    // if (
-    //   !hasInitialDataLoaded &&
-    //   !action.type?.includes("setProducts") &&
-    //   !action.type?.includes("loadSales") &&
-    //   !action.type?.includes("setPurchases") &&
-    //   !action.type?.includes("setExpenses") &&
-    //   !action.type?.includes("updateProfilePictureUrl")
-    // ) {
-    //   return;
-    // }
-
-    // If this is a data loading action, mark initial data as loaded
-    // if (
-    //   action.type?.includes("setProducts") ||
-    //   action.type?.includes("loadSales") ||
-    //   action.type?.includes("setPurchases") ||
-    //   action.type?.includes("setExpenses") ||
-    //   action.type?.includes("updateProfilePictureUrl")
-    // ) {
-    //   hasInitialDataLoaded = true;
-    // }
 
     await Promise.allSettled([
       syncWithAppwrite(userId, COLLECTION_IDS.inventory, state.inventory),
@@ -109,14 +210,19 @@ export const localStorageMiddleware = (store) => (next) => (action) => {
     console.error("Session storage error:", error);
   }
 
-  // Debounce sync with Appwrite
-  if (user?.id) {
+  // Fetch initial data when user logs in
+  if (user?.id && !hasInitialDataLoaded) {
+    fetchInitialData(user.id, store);
+  }
+
+  // Debounce sync with Appwrite for subsequent changes
+  if (user?.id && hasInitialDataLoaded) {
     if (syncTimeout) {
       clearTimeout(syncTimeout);
     }
 
     syncTimeout = setTimeout(() => {
-      performSync(user.id, state, action);
+      performSync(user.id, state);
     }, SYNC_DEBOUNCE_TIME);
   }
 
