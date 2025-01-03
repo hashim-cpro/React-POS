@@ -13,6 +13,7 @@ const COLLECTION_IDS = {
 const SYNC_DEBOUNCE_TIME = 2000; // 2 seconds
 let syncTimeout = null;
 let isSyncing = false;
+// let hasInitialDataLoaded = false;
 
 const syncWithAppwrite = async (userId, collectionId, data) => {
   if (!userId || !collectionId) return;
@@ -21,6 +22,11 @@ const syncWithAppwrite = async (userId, collectionId, data) => {
     const response = await databases.listDocuments(DATABASE_ID, collectionId, [
       Query.equal("userId", userId),
     ]);
+    console.log(response);
+    // Don't sync empty data if we already have data in Appwrite
+    // if (Object.keys(data).length === 0 && response.documents.length > 0) {
+    //   return;
+    // }
 
     const documentData = { data: JSON.stringify(data) };
 
@@ -39,6 +45,7 @@ const syncWithAppwrite = async (userId, collectionId, data) => {
     }
   } catch (error) {
     console.error(`Sync error for ${collectionId}:`, error);
+    throw error;
   }
 };
 
@@ -47,6 +54,30 @@ const performSync = async (userId, state) => {
 
   try {
     isSyncing = true;
+    //This is the function doing all the syncing function, I have to make a logic here that first fetch the data from the documents and set the them as the initial state and then sync the data with the appwrite if the data is changed
+
+    // If initial data hasn't been loaded and this is not a data loading action, skip sync
+    // if (
+    //   !hasInitialDataLoaded &&
+    //   !action.type?.includes("setProducts") &&
+    //   !action.type?.includes("loadSales") &&
+    //   !action.type?.includes("setPurchases") &&
+    //   !action.type?.includes("setExpenses") &&
+    //   !action.type?.includes("updateProfilePictureUrl")
+    // ) {
+    //   return;
+    // }
+
+    // If this is a data loading action, mark initial data as loaded
+    // if (
+    //   action.type?.includes("setProducts") ||
+    //   action.type?.includes("loadSales") ||
+    //   action.type?.includes("setPurchases") ||
+    //   action.type?.includes("setExpenses") ||
+    //   action.type?.includes("updateProfilePictureUrl")
+    // ) {
+    //   hasInitialDataLoaded = true;
+    // }
 
     await Promise.allSettled([
       syncWithAppwrite(userId, COLLECTION_IDS.inventory, state.inventory),
@@ -85,7 +116,7 @@ export const localStorageMiddleware = (store) => (next) => (action) => {
     }
 
     syncTimeout = setTimeout(() => {
-      performSync(user.id, state);
+      performSync(user.id, state, action);
     }, SYNC_DEBOUNCE_TIME);
   }
 

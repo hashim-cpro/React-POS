@@ -25,7 +25,7 @@ function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <DashboardCard
           title="Today's Sales"
-          value={`$${todayTotal.toFixed(2)}`}
+          value={`$${todayTotal?.toFixed(2)}`}
           icon={<CurrencyDollarIcon className="h-6 w-6" />}
         />
         <DashboardCard

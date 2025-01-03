@@ -7,14 +7,27 @@ import expenseReducer from "./slices/expenseSlice";
 import authReducer from "./slices/authSlice";
 import userReducer from "./slices/userSlice";
 import { localStorageMiddleware } from "./middleware/localStorageMiddleware";
+import { getDocuments } from "../config/appwrite";
 
-const loadState = () => {
+const loadState = async () => {
+  console.log(
+    getDocuments(
+      import.meta.env.VITE_INVENTORY_COLLECTION,
+      "6777c0f72d1703f39e47"
+    )
+  );
   try {
-    const inventory = localStorage.getItem("pos_inventory");
-    const sales = localStorage.getItem("pos_sales");
-    const purchases = localStorage.getItem("pos_purchases");
-    const expenses = localStorage.getItem("pos_expenses");
-    const userdata = localStorage.getItem("pos_user");
+    // const inventory = sessionStorage.getItem("pos_inventory");
+    // const response = await getDocuments(
+    //   import.meta.env.VITE_INVENTORY_COLLECTION,
+    //   "6777c0f72d1703f39e47"
+    // );
+    // const inventory = await response[response.length - 1].document[0].data;
+    const inventory = sessionStorage.getItem("pos_inventory");
+    const sales = sessionStorage.getItem("pos_sales");
+    const purchases = sessionStorage.getItem("pos_purchases");
+    const expenses = sessionStorage.getItem("pos_expenses");
+    const userdata = sessionStorage.getItem("pos_user");
 
     return {
       inventory: inventory ? JSON.parse(inventory) : undefined,

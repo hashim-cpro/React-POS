@@ -18,6 +18,8 @@ export default function App() {
         const response = await getCurrentUser();
         if (response.success) {
           store.dispatch(setUser(response.data));
+        } else {
+          console.error("No active session.");
         }
       } catch (error) {
         console.error("Session check failed:", error);

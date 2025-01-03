@@ -1,4 +1,4 @@
-import { Client, Account, Storage, Databases, ID } from "appwrite";
+import { Client, Account, Storage, Databases, ID, Query } from "appwrite";
 
 const client = new Client()
   .setEndpoint(import.meta.env.VITE_APPWRITE_ENDPOINT)
@@ -59,7 +59,6 @@ export const register = async (email, password, name) => {
 };
 
 export const verifyOTP = async (userId, secret) => {
-  console.log("userId", userId, "\nOTP: ", secret);
   try {
     const session = await account.createSession(userId, secret);
     return { success: true, data: session.data };
@@ -68,22 +67,7 @@ export const verifyOTP = async (userId, secret) => {
     return { success: false, error: error.message };
   }
 };
-export const verifyNewUser = async () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const secret = urlParams.get("secret");
-  const userId = urlParams.get("userId");
 
-  const promise = account.updateVerification(userId, secret);
-
-  promise.then(
-    function (response) {
-      console.log("Verification was successful! \n", response); // Success
-    },
-    function (error) {
-      console.log("there was some error verifying the user \n", error); // Failure
-    }
-  );
-};
 export const logout = async () => {
   try {
     await account.deleteSession("current");
@@ -110,7 +94,10 @@ export const getCurrentUser = async () => {
   } catch (error) {
     if (error.code === 401) {
       // User is not authenticated
-      return { success: false, error: "Not authenticated" };
+      return {
+        success: false,
+        error: "Not authenticated. An active session is missing.",
+      };
     }
     console.error("Get current user error:", error);
     return { success: false, error: error.message };
@@ -161,7 +148,6 @@ export const getDocuments = async (collectionId, userId) => {
     const response = await databases.listDocuments(
       import.meta.env.VITE_APPWRITE_DATABASE_ID,
       collectionId,
-      // eslint-disable-next-line no-undef
       [Query.equal("userId", userId)]
     );
     return response.documents;
@@ -170,6 +156,24 @@ export const getDocuments = async (collectionId, userId) => {
     throw error;
   }
 };
+//URL Verification
+// export const verifyNewUser = async () => {
+//   const urlParams = new URLSearchParams(window.location.search);
+//   const secret = urlParams.get("secret");
+//   const userId = urlParams.get("userId");
+
+//   const promise = account.updateVerification(userId, secret);
+
+//   promise.then(
+//     function (response) {
+//       console.log("Verification was successful! \n", response); // Success
+//     },
+//     function (error) {
+//       console.log("there was some error verifying the user \n", error); // Failure
+//     }
+//   );
+// };
+
 // export const register = async (email, password, name) => {
 //   try {
 //     const user = await account.create("unique()", email, password, name);

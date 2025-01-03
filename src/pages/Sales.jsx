@@ -19,6 +19,7 @@ import { calculateDiscountedPrice } from "../utils/discountCalculator";
 
 function Sales() {
   const [searchTerm, setSearchTerm] = useState("");
+  // eslint-disable-next-line no-unused-vars
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentSale, setCurrentSale] = useState(null);
   const [billType, setBillType] = useState("retail");

@@ -14,14 +14,14 @@ export default function Layout() {
   const [ProfileModalisCollapsed, setProfileModalisCollapsed] = useState(true);
 
   return (
-    <div className="flex h-screen bg-[#f6f8fc] relative">
+    <div className="flex h-screen overflow-x-hidden bg-[#f6f8fc] relative">
       <Sidebar />
-      <div className="fixed sm:top-[12px] top-[7px] right-[50px] sm:right-[24px] w-[116px] h-[46px] sm:bg-white rounded-[10px] flex items-center justify-between px-2 py-1 sm:shadow z-20 ">
+      <div className="fixed sm:top-[12px] top-[7px] right-[5px] sm:right-[24px] sm:w-[116px] w-[95px] h-[46px] sm:bg-white rounded-[10px] flex items-center justify-between px-2 py-1 sm:shadow z-20 ">
         <div className="w-[35px] h-[35px] flex items-center justify-center rounded-full hover:bg-[#9747FF1A] cursor-pointer relative">
           <span className="h-[10px] w-[10px] bg-[#FF5364] absolute top-[5px] right-[8px] rounded-full"></span>
           <img src={bellIcon} alt="notifications icon" />
         </div>
-        <img src={horizontalLine} alt="|" />
+        <img src={horizontalLine} alt="|" className="sm:inline-block hidden" />
         <span
           className="cursor-pointer border-white hover:border-[#9747FF1A] border-[3px] rounded-full"
           onClick={() => {
@@ -46,7 +46,7 @@ export default function Layout() {
       {ProfileModalisCollapsed ? null : <LoginButton isCollapsed={false} />}
 
       <main
-        className="flex-1 overflow-x-hidden overflow-y-auto bg-lightgraybg p-6 absolute top-0 left-0 sm:static"
+        className="flex-1 overflow-x-hidden overflow-y-auto bg-lightgraybg p-[75px_24px_85px_24px] sm:p-[70px_24px] absolute top-0 left-0 sm:static w-screen sm:w-auto"
         onClick={() => {
           setProfileModalisCollapsed(true);
         }}

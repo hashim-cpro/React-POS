@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
   login,
@@ -100,8 +101,6 @@ export default function LoginButton({ isCollapsed }) {
     }
 
     sessionStorage.clear();
-
-    throw error;
   };
 
   const handleSubmit = async (e) => {
@@ -147,11 +146,12 @@ export default function LoginButton({ isCollapsed }) {
     setError("");
 
     try {
-      if (!registrationData?.userId) {
+      if (!registrationData.userId) {
         throw new Error("Registration data is missing");
       }
 
       const response = await verifyOTP(registrationData.userId, otp);
+
       if (response.success) {
         const userData = {
           id: registrationData.userId,
@@ -160,7 +160,9 @@ export default function LoginButton({ isCollapsed }) {
           emailVerification: true,
         };
         dispatch(setUser(userData));
+
         await syncSessionData(registrationData.userId);
+
         setIsModalOpen(false);
         setOTP("");
         setShowOTPInput(false);
@@ -206,10 +208,10 @@ export default function LoginButton({ isCollapsed }) {
   };
 
   return (
-    <div className="fixed top-[65px] right-[24px] shadow rounded-[10px] p-0 z-20">
+    <div className="fixed top-[65px] sm:right-6 right-[5px] shadow sm:rounded-[10px] rounded-[6px] p-0 z-20">
       {user ? (
         <div
-          className={`p-3 w-[332px]  bg-white rounded-[10px] relative${
+          className={`p-3 w-[332px]  bg-white sm:rounded-[10px] rounded-[6px] relative${
             isCollapsed ? "items-center" : ""
           }`}
         >
@@ -247,21 +249,30 @@ export default function LoginButton({ isCollapsed }) {
               </div>
             )}
           </div>
-          <button
-            onClick={handleLogout}
-            disabled={isLoading}
-            className={`w-full flex items-center justify-center bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors ${
-              isCollapsed ? "p-2" : "px-4 py-2"
-            }`}
-          >
-            {isLoading ? (
-              <div className="animate-spin h-5 w-5 border-2 border-white rounded-full" />
-            ) : isCollapsed ? (
-              <span className="sr-only">Logout</span>
-            ) : (
-              "Logout"
-            )}
-          </button>
+          <div className="flex justify-evenly">
+            <Link
+              key="/settings"
+              to="/settings"
+              className="sm:hidden w-2/5 px-4 py-2 flex items-center justify-center bg-white text-black border border-black focus:bg-black focus:text-white rounded-lg transition-colors"
+            >
+              Settings
+            </Link>
+            <button
+              onClick={handleLogout}
+              disabled={isLoading}
+              className={`w-2/5 sm:w-full flex items-center justify-center bg-[#ff5364] text-white rounded-lg hover:bg-[#d14452] transition-colors ${
+                isCollapsed ? "p-2" : "px-4 py-2"
+              }`}
+            >
+              {isLoading ? (
+                <div className="animate-spin h-5 w-5 border-2 border-white rounded-full" />
+              ) : isCollapsed ? (
+                <span className="sr-only">Logout</span>
+              ) : (
+                "Logout"
+              )}
+            </button>
+          </div>
         </div>
       ) : (
         <button
