@@ -11,6 +11,7 @@ import Inventory from "./pages/Inventory";
 import Purchases from "./pages/Purchases";
 import Expenses from "./pages/Expenses";
 import Settings from "./pages/Settings";
+import PasswordRecovery from "./pages/PasswordRecovery";
 export default function App() {
   useEffect(() => {
     const checkSession = async () => {
@@ -30,7 +31,13 @@ export default function App() {
 
   return (
     <Provider store={store}>
-      <BrowserRouter>
+      <BrowserRouter
+        future={{
+          //Enable for future features
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
         <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={<Dashboard />} />
@@ -40,6 +47,7 @@ export default function App() {
             <Route path="/expenses" element={<Expenses />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
+          <Route path="/password-recovery" element={<PasswordRecovery />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

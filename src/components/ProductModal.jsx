@@ -1,5 +1,4 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable react/prop-types */
+import PropTypes from "prop-types";
 import { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { addProduct, updateProduct } from "../store/slices/inventorySlice";
@@ -12,7 +11,6 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
   const [error, setError] = useState("");
   const [priceErrors, setPriceErrors] = useState([]);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [newCategory, setNewCategory] = useState("");
   const dropdownRef = useRef(null);
   const [minRetailPrice, setminRetailPrice] = useState(0);
   const [suggestedWholesalePrice, setsuggestedWholesalePrice] = useState(0);
@@ -21,7 +19,7 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
     retailPrice: "",
     wholesalePrice: "",
     purchaseRate: "",
-    minWholesaleQty: "10",
+    minWholesaleQty: "0",
     sku: "",
     quantity: "",
     minStockLevel: "",
@@ -424,5 +422,24 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
     </div>
   );
 }
+
+ProductModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  product: PropTypes.shape({
+    id: PropTypes.string,
+    name: PropTypes.string,
+    retailPrice: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    wholesalePrice: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    purchaseRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    minWholesaleQty: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    sku: PropTypes.string,
+    quantity: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    minStockLevel: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    category: PropTypes.string,
+    description: PropTypes.string,
+    image: PropTypes.string,
+  }),
+};
 
 export default ProductModal;

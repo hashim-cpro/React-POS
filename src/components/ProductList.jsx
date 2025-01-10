@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
 import PropTypes from "prop-types";
 import ProductCard from "./ProductCard";
-import { SearchInput } from "../../../components/common/inputs";
+// import { SearchInput } from "../../../components/common/inputs";
 
 const ProductList = ({ onAddToCart, searchTerm, billType }) => {
   const { products } = useSelector((state) => state.inventory);

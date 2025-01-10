@@ -7,6 +7,7 @@ import {
   logout,
   getCurrentUser,
   verifyOTP,
+  sendPasswordResetEmail,
 } from "../config/appwrite";
 import { setUser, clearUser, syncUserData } from "../store/slices/authSlice";
 import { setProducts } from "../store/slices/inventorySlice";
@@ -15,18 +16,24 @@ import { setPurchases } from "../store/slices/purchaseSlice";
 import { setExpenses } from "../store/slices/expenseSlice";
 import ImageUploader from "./profile/ImageUploader";
 import ProfilePicture from "./profile/ProfilePicture";
+import eyeOpen from "../assets/eyeopen.svg";
+import eyeClose from "../assets/eyeclose.svg";
 import { updateProfilePictureUrl } from "../store/slices/userSlice";
 import triangle from "../assets/triangle.svg";
 import editIcon from "../assets/edit.svg";
+import illustartion from "../assets/illustration.png";
+import OtpInput from "react-otp-input";
 
 // eslint-disable-next-line react/prop-types
 export default function LoginButton({ isCollapsed }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(false);
   const [error, setError] = useState("");
   const [showOTPInput, setShowOTPInput] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
   const [otp, setOTP] = useState("");
   const [registrationData, setRegistrationData] = useState(null);
   const [formData, setFormData] = useState({
@@ -277,15 +284,11 @@ export default function LoginButton({ isCollapsed }) {
       ) : (
         <button
           onClick={() => setIsModalOpen(true)}
-          className={`w-full flex items-center justify-center bg-customblue text-white rounded-lg hover:bg-blue-600 transition-colors ${
+          className={`w-24 flex items-center justify-center bg-[#9747ff] text-white font-poppins font-semibold text-sm rounded-[30px] hover:bg-[#5d1d95] transition-colors fixed sm:top-3 top-[10px] right-6 ${
             isCollapsed ? "p-2" : "px-4 py-2"
           }`}
         >
-          {isCollapsed ? (
-            <span className="sr-only">Login</span>
-          ) : (
-            "Login / Register"
-          )}
+          {isCollapsed ? <span className="sr-only">Login</span> : "Sign Up!"}
         </button>
       )}
 
@@ -346,11 +349,11 @@ export default function LoginButton({ isCollapsed }) {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4">
-            <div className="fixed inset-0 bg-black opacity-50" />
-            <div className="relative bg-white rounded-lg p-8 max-w-md w-full">
+            <div className="fixed inset-0 bg-[#ffffff7b] backdrop-blur-sm" />
+            <div className="relative bg-white p-0 max-w-[70%] w-full h-[80vh] rounded-xl shadow-lg flex flex-row items-center justify-center overflow-hidden">
               <button
                 onClick={resetForm}
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-500"
+                className="absolute top-3 right-3 w-10 h-10 flex items-center justify-center rounded-full text-black bg-white"
               >
                 <span className="sr-only">Close</span>
                 <svg
@@ -367,124 +370,201 @@ export default function LoginButton({ isCollapsed }) {
                   />
                 </svg>
               </button>
+              <div className="flex flex-col gap-4 items-center justify-center w-3/5">
+                <h2 className="text-center text-black text-5xl font-bold font-['Poppins']">
+                  {showOTPInput
+                    ? "Verify Email"
+                    : isLogin
+                    ? "Login"
+                    : "Sign Up"}
+                </h2>
 
-              <h2 className="text-2xl font-bold mb-6">
-                {showOTPInput ? "Verify Email" : isLogin ? "Login" : "Register"}
-              </h2>
-
-              {error && (
-                <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md">
-                  {error}
-                </div>
-              )}
-
-              {showOTPInput ? (
-                <form onSubmit={handleVerifyOTP} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Enter OTP
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      value={otp}
-                      onChange={(e) => setOTP(e.target.value)}
-                      placeholder="Enter the OTP sent to your email"
-                    />
+                {error && (
+                  <div className="m-4 p-3 bg-red-50 text-red-700 rounded-[6px] w-9/12">
+                    {error}
                   </div>
+                )}
 
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    {isLoading ? (
-                      <div className="animate-spin h-5 w-5 border-2 border-white rounded-full" />
-                    ) : (
-                      "Verify OTP"
-                    )}
-                  </button>
-                </form>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  {!isLogin && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Name
-                      </label>
-                      <input
-                        type="text"
-                        required={!isLogin}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        value={formData.name}
-                        onChange={(e) =>
-                          setFormData({ ...formData, name: e.target.value })
-                        }
-                      />
+                {showOTPInput ? (
+                  <form onSubmit={handleVerifyOTP} className="space-y-4 w-full">
+                    <div className="flex items-center justify-center flex-col">
+                      <span>
+                        <label className="block text-black/50 text-xs font-bold font-poppins pl-4">
+                          Enter OTP
+                        </label>
+                        <OtpInput
+                          value={otp}
+                          onChange={setOTP}
+                          numInputs={6}
+                          inputStyle={{
+                            background: "#e6e9f3",
+                            borderRadius: "10px",
+                            height: "40px",
+                            width: "40px",
+                            margin: "0 5px",
+                            fontSize: "20px",
+                            textAlign: "center",
+                            borderColor: "#9747ff",
+                            outlineColor: "#9747ff",
+                          }}
+                          renderSeparator={<span>-</span>}
+                          renderInput={(props) => <input {...props} />}
+                        />
+                      </span>
                     </div>
-                  )}
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      value={formData.email}
-                      onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
-                      }
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Password
-                    </label>
-                    <input
-                      type="password"
-                      required
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                      value={formData.password}
-                      onChange={(e) =>
-                        setFormData({ ...formData, password: e.target.value })
-                      }
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    {isLoading ? (
-                      <div className="animate-spin h-5 w-5 border-2 border-white rounded-full" />
-                    ) : isLogin ? (
-                      "Login"
-                    ) : (
-                      "Register"
+                    <div className="flex items-center justify-center w-full">
+                      <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-[103px] h-10 bg-[#9747ff] rounded-[30px] text-white font-semibold flex items-center justify-center"
+                      >
+                        {isLoading ? (
+                          <div className="animate-spin h-5 w-5 border-2 border-white rounded-full" />
+                        ) : (
+                          "Verify OTP"
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-4 w-full">
+                    {!isLogin && (
+                      <div className="flex items-center flex-col">
+                        <span className="w-9/12 flex flex-col">
+                          <label className="block text-black/50 text-xs font-bold font-poppins pl-4 float-left">
+                            Username
+                          </label>
+                          <input
+                            type="text"
+                            required={!isLogin}
+                            className="h-10 w-full bg-[#e6e9f3] rounded-[30px] border-2 focus:border-[#9747ff] focus:outline-none focus:bg-[#e6e9f3] indent-4"
+                            value={formData.name}
+                            onChange={(e) =>
+                              setFormData({ ...formData, name: e.target.value })
+                            }
+                          />
+                        </span>
+                      </div>
                     )}
-                  </button>
 
-                  <div className="text-center mt-4">
-                    <button
-                      type="button"
-                      className="text-sm text-blue-600 hover:text-blue-500"
-                      onClick={() => {
-                        setIsLogin(!isLogin);
-                        setError("");
-                      }}
-                    >
-                      {isLogin
-                        ? "Don't have an account? Register"
-                        : "Already have an account? Login"}
-                    </button>
-                  </div>
-                </form>
-              )}
+                    <div className="flex items-center flex-col">
+                      <span className="w-9/12 flex flex-col">
+                        {" "}
+                        <label className="block  text-black/50 text-xs font-bold font-poppins pl-4">
+                          Email
+                        </label>
+                        <input
+                          type="email"
+                          required
+                          className="h-10 w-full bg-[#e6e9f3] rounded-[30px] border-2 focus:border-[#9747ff] focus:outline-none focus:bg-[#e6e9f3] indent-4"
+                          value={formData.email}
+                          onChange={(e) =>
+                            setFormData({ ...formData, email: e.target.value })
+                          }
+                        />
+                      </span>
+                    </div>
+
+                    <div className="flex items-center flex-col">
+                      <span className="w-9/12 flex flex-col">
+                        <label className="block  text-black/50 text-xs font-bold font-poppins pl-4">
+                          Password
+                        </label>
+                        <div className="relative w-full">
+                          <input
+                            type={showPassword ? "text" : "password"}
+                            required
+                            className="h-10 w-full bg-[#e6e9f3] rounded-[30px] border-2 focus:border-[#9747ff] focus:outline-none focus:bg-[#e6e9f3] indent-4 pr-10"
+                            value={formData.password}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                password: e.target.value,
+                              })
+                            }
+                          />
+                          {isLogin ? (
+                            <p
+                              onClick={() => {
+                                if (
+                                  formData.email &&
+                                  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+                                    formData.email
+                                  )
+                                ) {
+                                  sendPasswordResetEmail(formData.email);
+                                } else {
+                                  alert("Please add a valid email!");
+                                }
+                              }}
+                              className="block  text-[#9747ff] text-xs font-medium font-poppins pl-4  my-2 cursor-pointer hover:text-[#6947ff]"
+                            >
+                              Forgot Password?
+                            </p>
+                          ) : null}
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-[21px] transform -translate-y-1/2 text-gray-500 hover:text-black focus:outline-none"
+                          >
+                            {showPassword ? (
+                              <img src={eyeOpen} alt="showpass" />
+                            ) : (
+                              <img src={eyeClose} alt="hidepass" />
+                            )}
+                          </button>
+                        </div>
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-[103px] h-10 bg-[#9747ff] rounded-[30px] text-white font-semibold flex items-center justify-center"
+                      >
+                        {isLoading ? (
+                          <div className="animate-spin h-5 w-5 border-2 border-white rounded-full" />
+                        ) : isLogin ? (
+                          "Login"
+                        ) : (
+                          "Sign Up"
+                        )}
+                      </button>
+                    </div>
+                    <div className="text-center mt-4">
+                      <button
+                        type="button"
+                        className="text-sm text-black"
+                        onClick={() => {
+                          setIsLogin(!isLogin);
+                          setError("");
+                        }}
+                      >
+                        {isLogin
+                          ? "Don't have an account? "
+                          : "Already have an account? "}
+                        <b className="text-[#9747ff] font-medium  hover:text-[#a058fe]">
+                          {isLogin ? "Sign Up" : "Login"}
+                        </b>
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+              <div className="flex flex-col items-center justify-center w-2/5 bg-[#9747ff] h-full">
+                <img
+                  src={illustartion}
+                  alt="illustration"
+                  className="w-auto h-3/5"
+                />
+                <div className="text-center text-white text-base font-bold font-poppins">
+                  Manage your whole business in 1 place!
+                </div>
+                <div className="pl-1 pr-1 mt-2 text-center text-white text-xs font-poppins leading-[15px]">
+                  Order up is your one stop shop to get free of all the
+                  difficult and complex business management.
+                </div>
+              </div>
             </div>
           </div>
         </div>

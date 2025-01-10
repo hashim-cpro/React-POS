@@ -1,8 +1,8 @@
 import { useSelector } from "react-redux";
 import PropTypes from "prop-types";
 import { formatPrice } from "../utils/priceFormatters";
-//This is using the old default props which is giving the warning
-function InventoryCardView({ onEdit, searchTerm }) {
+
+function InventoryCardView({ onEdit = () => {}, searchTerm = "" }) {
   const { products } = useSelector((state) => state.inventory);
 
   const filteredProducts = products.filter(
@@ -106,10 +106,6 @@ function InventoryCardView({ onEdit, searchTerm }) {
 InventoryCardView.propTypes = {
   onEdit: PropTypes.func.isRequired,
   searchTerm: PropTypes.string,
-};
-
-InventoryCardView.defaultProps = {
-  searchTerm: "",
 };
 
 export default InventoryCardView;

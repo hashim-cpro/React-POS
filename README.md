@@ -1,4 +1,16 @@
-This is a React based **POS(Point of Sale)** which is a work in progress.
+This is a React based **POS(Point of Sale)** which took me 60+ hours.
+
+## Features
+
+- ### Authentication
+  - Sign Up
+  - OTP vertification
+  - Log in
+  - Password Recovery
+
+## Credits
+
+-
 
 ## Figma File(in production)
 
@@ -10,5 +22,9 @@ This is a React based **POS(Point of Sale)** which is a work in progress.
 - **Redux**
 - **Tailwind CSS**
 - **React Router**
+- **Appwrite**
+- [**react-otp-input**](https://www.npmjs.com/package/react-otp-input)
 
-  I will update readme later.
+## 📃License
+
+It is licensed under [MIT](/LICENSE) so I won't be responsible if it breaks or someone messes up the database :)

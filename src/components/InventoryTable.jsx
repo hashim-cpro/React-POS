@@ -1,7 +1,8 @@
 import { useState } from "react";
+import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
 
-function InventoryTable({ onEdit, searchTerm }) {
+function InventoryTable({ onEdit = () => {}, searchTerm = "" }) {
   const { products } = useSelector((state) => state.inventory);
   const [sortField, setSortField] = useState("name");
   const [sortDirection, setSortDirection] = useState("asc");
@@ -160,5 +161,9 @@ function InventoryTable({ onEdit, searchTerm }) {
     </div>
   );
 }
+InventoryTable.propTypes = {
+  onEdit: PropTypes.func,
+  searchTerm: PropTypes.string,
+};
 
 export default InventoryTable;

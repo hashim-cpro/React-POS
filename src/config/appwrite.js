@@ -20,7 +20,6 @@ export const login = async (email, password) => {
         email: user.email,
         name: user.name,
         id: user.$id,
-        emailVerification: user.emailVerification,
       },
     };
   } catch (error) {
@@ -43,10 +42,10 @@ export const register = async (email, password, name) => {
           console.log("Failure sending otp", error); // Failure
         }
       );
-      // const session = await account.createSession(user.$id, secret); secret is the otp
+
       return {
         success: true,
-        // data: session.data,
+
         emailVerification: user.emailVerification,
         userId: user.$id, // Return userId for OTP verification
       };
@@ -67,7 +66,32 @@ export const verifyOTP = async (userId, secret) => {
     return { success: false, error: error.message };
   }
 };
-
+export const sendPasswordResetEmail = async (email) => {
+  try {
+    await account.createRecovery(
+      email,
+      "http://localhost:5173/password-recovery"
+    );
+    console.log("Password reset email sent successfully");
+    return { success: true };
+  } catch (error) {
+    console.error("Password reset error:", error);
+    return { success: false, error: error.message };
+  }
+};
+export const resetPassword = async (
+  userId,
+  secret,
+  password,
+  confirmPassword
+) => {
+  try {
+    await account.updateRecovery(userId, secret, password, confirmPassword);
+  } catch (error) {
+    console.error("Password reset error:", error);
+    return { success: false, error: error.message };
+  }
+};
 export const logout = async () => {
   try {
     await account.deleteSession("current");
@@ -88,7 +112,6 @@ export const getCurrentUser = async () => {
         email: user.email,
         name: user.name,
         id: user.$id,
-        emailVerification: user.emailVerification,
       },
     };
   } catch (error) {
