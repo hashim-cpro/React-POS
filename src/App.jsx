@@ -12,6 +12,8 @@ import Purchases from "./pages/Purchases";
 import Expenses from "./pages/Expenses";
 import Settings from "./pages/Settings";
 import PasswordRecovery from "./pages/PasswordRecovery";
+import ErrorBoundary from "./components/ErrorBoundary";
+
 export default function App() {
   useEffect(() => {
     const checkSession = async () => {
@@ -38,18 +40,20 @@ export default function App() {
           v7_relativeSplatPath: true,
         }}
       >
-        <Routes>
-          <Route element={<Layout />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/sales" element={<Sales />} />
-            <Route path="/inventory" element={<Inventory />} />
-            <Route path="/purchases" element={<Purchases />} />
-            <Route path="/expenses" element={<Expenses />} />
-            <Route path="/settings" element={<Settings />} />
-          </Route>
-          <Route path="/password-recovery" element={<PasswordRecovery />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <ErrorBoundary>
+          <Routes>
+            <Route element={<Layout />}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/sales" element={<Sales />} />
+              <Route path="/inventory" element={<Inventory />} />
+              <Route path="/purchases" element={<Purchases />} />
+              <Route path="/expenses" element={<Expenses />} />
+              <Route path="/settings" element={<Settings />} />
+            </Route>
+            <Route path="/password-recovery" element={<PasswordRecovery />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </ErrorBoundary>
       </BrowserRouter>
     </Provider>
   );
