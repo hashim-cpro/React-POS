@@ -26,6 +26,7 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
     category: "",
     description: "",
     image: "",
+    location: "",
   });
 
   const existingCategories = [
@@ -59,6 +60,7 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
         category: "",
         description: "",
         image: "",
+        location: "",
       });
     }
     setError("");
@@ -359,7 +361,19 @@ function ProductModal({ isOpen, onClose, product: editingProduct }) {
                   </div>
                 )}
               </div>
-
+              <div className="">
+                <label className="block text-sm font-medium text-gray-700">
+                  Location
+                </label>
+                <input
+                  type="text"
+                  className="input mt-1"
+                  value={product.location}
+                  onChange={(e) =>
+                    setProduct({ ...product, location: e.target.value })
+                  }
+                />
+              </div>
               {editingProduct && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700">

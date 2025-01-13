@@ -1,8 +1,20 @@
 import Barcode from "react-barcode";
 import { formatPrice } from "../utils/priceFormatters";
+import PropTypes from "prop-types";
 
-function ProductCard({ product, onAddToCart }) {
-  const { name, description, image, price, quantity, sku } = product;
+function ProductCard({ product, onAddToCart, billType }) {
+  const {
+    name,
+    description,
+    image,
+    retailPrice,
+    wholesalePrice,
+    quantity,
+    sku,
+  } = product;
+
+  // Get the appropriate price based on bill type
+  const price = billType === "wholesale" ? wholesalePrice : retailPrice;
 
   return (
     <div className="bg-white rounded-lg shadow p-4">
@@ -40,5 +52,18 @@ function ProductCard({ product, onAddToCart }) {
     </div>
   );
 }
+ProductCard.propTypes = {
+  product: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    description: PropTypes.string,
+    image: PropTypes.string,
+    retailPrice: PropTypes.number.isRequired,
+    wholesalePrice: PropTypes.number.isRequired,
+    quantity: PropTypes.number.isRequired,
+    sku: PropTypes.string.isRequired,
+  }).isRequired,
+  onAddToCart: PropTypes.func.isRequired,
+  billType: PropTypes.string.isRequired,
+};
 
 export default ProductCard;

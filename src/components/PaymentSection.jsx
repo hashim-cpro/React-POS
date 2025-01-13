@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { formatPrice } from "../utils/priceFormatters";
 
+// eslint-disable-next-line react/prop-types
 function PaymentSection({ total, onPaymentComplete }) {
-  const [payments, setPayments] = useState([{ method: "cash", amount: total }]);
+  const [payments, setPayments] = useState([]); // Start with empty payments array
   const [currentAmount, setCurrentAmount] = useState("");
 
   const paymentMethods = [

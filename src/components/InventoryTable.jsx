@@ -1,11 +1,48 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
+// import { ActiveTable } from "active-table-react";
 
 function InventoryTable({ onEdit = () => {}, searchTerm = "" }) {
   const { products } = useSelector((state) => state.inventory);
   const [sortField, setSortField] = useState("name");
   const [sortDirection, setSortDirection] = useState("asc");
+  // const data = [
+  //   [{ header: "Name", type: "Text", editable: false }],
+  //   ["Earth", 12756, "E123", 100, "Warehouse A", 5000, 5500, 6000],
+  //   ["Mars", 6792, "M456", 50, "Warehouse B", 3000, 3300, 3600],
+  //   // Additional rows...
+  // ];
+  const [columnWidths, setColumnWidths] = useState({
+    product: 150,
+    details: 250,
+    sku: 120,
+    prices: 200,
+    stock: 180,
+    actions: 100,
+  });
+
+  const handleMouseDown = (e, colKey) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = columnWidths[colKey];
+
+    const onMouseMove = (moveEvent) => {
+      const newWidth = startWidth + moveEvent.clientX - startX;
+      setColumnWidths((prev) => ({
+        ...prev,
+        [colKey]: Math.max(newWidth, 80),
+      }));
+    };
+
+    const onMouseUp = () => {
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  };
 
   const filteredProducts = products.filter(
     (product) =>
@@ -43,46 +80,103 @@ function InventoryTable({ onEdit = () => {}, searchTerm = "" }) {
 
   return (
     <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-300">
+      <div
+        className="overflow-x-auto w-full"
+        role="region"
+        aria-label="Inventory table"
+      >
+        <table className="min-w-full table-fixed border-collapse">
           <thead className="bg-gray-50">
             <tr>
               <th
                 scope="col"
-                className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900"
+                style={{ width: columnWidths.product }}
+                className="py-3.5 pl-4 pr-2 text-left text-sm font-semibold text-gray-900 relative border border-gray-200"
               >
                 Product
+                <span
+                  onMouseDown={(e) => handleMouseDown(e, "product")}
+                  className="absolute top-0 right-0 w-1 h-full cursor-col-resize bg-transparent"
+                  role="separator"
+                  aria-orientation="vertical"
+                />
               </th>
               <th
                 scope="col"
-                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer"
-                onClick={() => handleSort("name")}
+                style={{ width: columnWidths.details }}
+                className="py-3.5 pl-4 pr-2 text-left text-sm font-semibold text-gray-900 relative border border-gray-200"
               >
                 Details
+                <span
+                  onMouseDown={(e) => handleMouseDown(e, "details")}
+                  className="absolute top-0 right-0 w-1 h-full cursor-col-resize bg-transparent"
+                  role="separator"
+                  aria-orientation="vertical"
+                />
               </th>
               <th
                 scope="col"
-                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hidden md:table-cell"
+                style={{ width: columnWidths.sku }}
+                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hidden md:table-cell relative border border-gray-200"
                 onClick={() => handleSort("sku")}
               >
                 SKU
+                <span
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    handleMouseDown(e, "sku");
+                  }}
+                  className="absolute top-0 right-0 w-1 h-full cursor-col-resize bg-transparent"
+                  role="separator"
+                  aria-orientation="vertical"
+                />
               </th>
               <th
                 scope="col"
-                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                style={{ width: columnWidths.prices }}
+                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer relative border border-gray-200"
                 onClick={() => handleSort("retailPrice")}
               >
                 Prices
+                <span
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    handleMouseDown(e, "prices");
+                  }}
+                  className="absolute top-0 right-0 w-1 h-full cursor-col-resize bg-transparent"
+                  role="separator"
+                  aria-orientation="vertical"
+                />
               </th>
               <th
                 scope="col"
-                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+                style={{ width: columnWidths.stock }}
+                className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer relative border border-gray-200"
                 onClick={() => handleSort("quantity")}
               >
                 Stock Status
+                <span
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    handleMouseDown(e, "stock");
+                  }}
+                  className="absolute top-0 right-0 w-1 h-full cursor-col-resize bg-transparent"
+                  role="separator"
+                  aria-orientation="vertical"
+                />
               </th>
-              <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
+              <th
+                scope="col"
+                style={{ width: columnWidths.actions }}
+                className="relative py-3.5 pl-3 pr-4 sm:pr-6 text-sm font-semibold text-gray-900 border border-gray-200"
+              >
                 <span className="sr-only">Actions</span>
+                <span
+                  onMouseDown={(e) => handleMouseDown(e, "actions")}
+                  className="absolute top-0 right-0 w-1 h-full cursor-col-resize bg-transparent"
+                  role="separator"
+                  aria-orientation="vertical"
+                />
               </th>
             </tr>
           </thead>
@@ -158,6 +252,37 @@ function InventoryTable({ onEdit = () => {}, searchTerm = "" }) {
           </tbody>
         </table>
       </div>
+      {/* <ActiveTable
+        isCellTextEditable={false}
+        displayAddNewRow={false}
+        displayAddNewColumn={false}
+        columnDropdown={{
+          displaySettings: {
+            isAvailable: true,
+            openMethod: { cellClick: true },
+          },
+          isSortAvailable: true,
+          isDeleteAvailable: false,
+          isInsertLeftAvailable: false,
+          isInsertRightAvailable: false,
+          isMoveAvailable: true,
+        }}
+        rowDropdown={{
+          displaySettings: {
+            isAvailable: true,
+            openMethod: { cellClick: true },
+          },
+          isInsertUpAvailable: false,
+          isInsertDownAvailable: false,
+          isMoveAvailable: true,
+          isDeleteAvailable: false,
+          canEditHeaderRow: false,
+        }}
+        // columns={//doesn't support a fixed header}
+        data={data}
+        headerStyles={{ default: { backgroundColor: "#d6d6d630" } }}
+      />
+       */}
     </div>
   );
 }

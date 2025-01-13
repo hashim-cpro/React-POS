@@ -19,7 +19,10 @@ export default function Layout() {
       <Sidebar />
       {user ? (
         <div className="fixed sm:top-[12px] top-[7px] right-[5px] sm:right-[24px] sm:w-[116px] w-[95px] h-[46px] sm:bg-white rounded-[10px] flex items-center justify-between px-2 py-1 sm:shadow z-20 ">
-          <div className="w-[35px] h-[35px] flex items-center justify-center rounded-full hover:bg-[#9747FF1A] cursor-pointer relative">
+          <div
+            className="w-[35px] h-[35px] flex items-center justify-center rounded-full hover:bg-[#9747FF1A] cursor-pointer relative"
+            onClick={() => alert("Notifications go here, (working on it)")}
+          >
             <span className="h-[10px] w-[10px] bg-[#FF5364] absolute top-[5px] right-[8px] rounded-full"></span>
             <img src={bellIcon} alt="notifications icon" />
           </div>

@@ -12,7 +12,7 @@ function Inventory() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [viewMode, setViewMode] = useState("table");
+  const [viewMode, setViewMode] = useState("card");
   const { loading, products } = useSelector((state) => state.inventory);
 
   const handleEdit = (product) => {
