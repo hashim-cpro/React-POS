@@ -1,8 +1,8 @@
 # React POS System 🛒💻
 
-This is a React-based **POS (Point of Sale)** system that took me 60+ hours to make. It's a modern, full-featured POS that won't make you want to throw your computer out the window... most of the time. 😅
-[Image](https://cloud-d37m60xud-hack-club-bot.vercel.app/0image.png)
-[Image](https://cloud-d37m60xud-hack-club-bot.vercel.app/0image.png)
+This is a React-based **POS (Point of Sale)** system that took me hell lot of time to make. It's a modern, full-featured POS that won't make you want to throw your computer out the window... most of the time. 😅
+![Image](https://cloud-d37m60xud-hack-club-bot.vercel.app/0image.png)
+![Image](https://cloud-d37m60xud-hack-club-bot.vercel.app/1image.png)
 
 💡 **Pro Tip (for all you hustling devs out there):** There's always a certain breed of developers who dream of quick riches, and POS systems just happen to be _the_ fastest way to turn code into money. Not saying anything... but iykyk. 😉
 
