@@ -1,5 +1,3 @@
-import React from "react";
-
 function BillTypeSelector({ billType, onBillTypeChange }) {
   return (
     <div className="mb-4">

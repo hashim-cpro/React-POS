@@ -23,12 +23,15 @@ function Inventory() {
   const exportToExcel = () => {
     const data = products.map((product) => ({
       name: product.name,
-      sku: product.sku,
-      price: product.price,
-      quantity: product.quantity,
-      category: product.category,
-      minStockLevel: product.minStockLevel,
       description: product.description,
+      category: product.category,
+      quantity: product.quantity,
+      minStockLevel: product.minStockLevel,
+      location: product.location,
+      sku: product.sku,
+      Purchase: product.purchaseRate,
+      retailPrice: product.retailPrice,
+      wholesalePrice: product.wholesalePrice,
       image: product.image,
     }));
 

@@ -350,7 +350,7 @@ export default function LoginButton({ isCollapsed }) {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4">
             <div className="fixed inset-0 bg-[#ffffff7b] backdrop-blur-sm" />
-            <div className="relative bg-white p-0 max-w-[70%] w-full h-[80vh] rounded-xl shadow-lg flex flex-row items-center justify-center overflow-hidden">
+            <div className="relative bg-white p-0 lg:max-w-[70%] max-w-full w-full h-[80vh] rounded-xl shadow-lg flex lg:flex-row flex-col items-center justify-center overflow-hidden">
               <button
                 onClick={resetForm}
                 className="absolute top-3 right-3 w-10 h-10 flex items-center justify-center rounded-full text-black bg-white"
@@ -370,7 +370,7 @@ export default function LoginButton({ isCollapsed }) {
                   />
                 </svg>
               </button>
-              <div className="flex flex-col gap-4 items-center justify-center w-3/5">
+              <div className="flex flex-col gap-4 items-center justify-center lg:w-3/5 w-full">
                 <h2 className="text-center text-black text-5xl font-bold font-['Poppins']">
                   {showOTPInput
                     ? "Verify Email"
@@ -551,7 +551,7 @@ export default function LoginButton({ isCollapsed }) {
                   </form>
                 )}
               </div>
-              <div className="flex flex-col items-center justify-center w-2/5 bg-[#9747ff] h-full">
+              <div className="lg:flex hidden flex-col items-center justify-center w-2/5 bg-[#9747ff] h-full">
                 <img
                   src={illustartion}
                   alt="illustration"

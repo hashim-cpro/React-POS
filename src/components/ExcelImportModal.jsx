@@ -3,19 +3,32 @@ import { read, utils, writeFile } from "xlsx-js-style";
 import { useDispatch } from "react-redux";
 import { addProduct } from "../store/slices/inventorySlice";
 
+// eslint-disable-next-line react/prop-types
 function ExcelImportModal({ isOpen, onClose }) {
   const dispatch = useDispatch();
   const [error, setError] = useState("");
   const [successCount, setSuccessCount] = useState(0);
 
   const validateRow = (row) => {
-    const required = ["name", "price", "sku", "quantity", "category"];
+    const required = [
+      "name",
+      "description",
+      "category",
+      "quantity",
+      "minStockLevel",
+      "location",
+      "sku",
+      "purchase",
+      "retailPrice",
+      "wholesalePrice",
+      "image",
+    ];
     const missing = required.filter((field) => !row[field]);
     if (missing.length > 0) {
       throw new Error(`Missing required fields: ${missing.join(", ")}`);
     }
 
-    if (isNaN(parseFloat(row.price)) || parseFloat(row.price) < 0) {
+    if (isNaN(parseFloat(row.retailPrice)) || parseFloat(row.retailPrice) < 0) {
       throw new Error("Invalid price value");
     }
 
@@ -25,7 +38,9 @@ function ExcelImportModal({ isOpen, onClose }) {
 
     return {
       ...row,
-      price: parseFloat(row.price),
+      purchaseRate: parseFloat(row.purchase),
+      retailPrice: parseFloat(row.retailPrice),
+      wholesalePrice: parseFloat(row.wholesalePrice),
       quantity: parseInt(row.quantity),
       minStockLevel: parseInt(row.minStockLevel) || 5,
     };
@@ -47,10 +62,12 @@ function ExcelImportModal({ isOpen, onClose }) {
       rows.forEach((row, index) => {
         try {
           const validatedProduct = validateRow(row);
+          console.log(validatedProduct);
           dispatch(addProduct(validatedProduct));
           successfulImports++;
         } catch (err) {
           errors.push(`Row ${index + 2}: ${err.message}`);
+          console.error(err);
         }
       });
 
@@ -59,20 +76,23 @@ function ExcelImportModal({ isOpen, onClose }) {
       }
       setSuccessCount(successfulImports);
     } catch (err) {
-      setError("Failed to parse Excel file. Please check the format.");
+      setError("Failed to parse Excel file. Please check the format.\n", err);
     }
   };
 
   const downloadTemplate = () => {
     const template = [
       {
-        name: "Example Product",
-        sku: "SKU123",
-        price: "9.99",
+        name: "Cats",
+        description: "meow",
+        category: "animals",
         quantity: "100",
-        category: "Category",
         minStockLevel: "5",
-        description: "Product description",
+        location: "basement",
+        sku: "SKU123",
+        purchase: "20",
+        retailPrice: "59.99",
+        wholesalePrice: "39.99",
         image: "https://example.com/image.jpg",
       },
     ];

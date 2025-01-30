@@ -16,6 +16,10 @@ function PaymentSection({ total, onPaymentComplete }) {
   const remainingAmount =
     total - payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
 
+  const change =
+    payments.reduce((sum, p) => sum + parseFloat(p.amount), 0) +
+    parseFloat(currentAmount) -
+    total;
   const handleAddPayment = () => {
     if (!currentAmount || parseFloat(currentAmount) <= 0) return;
 
@@ -23,14 +27,12 @@ function PaymentSection({ total, onPaymentComplete }) {
       method: document.getElementById("paymentMethod").value,
       amount: parseFloat(currentAmount),
     };
-
     if (
       payments.reduce((sum, p) => sum + parseFloat(p.amount), 0) +
         parseFloat(currentAmount) >
       total
     ) {
-      alert("Total payments cannot exceed bill amount");
-      return;
+      console.log(`Your change is: ${change}`);
     }
 
     setPayments([...payments, newPayment]);

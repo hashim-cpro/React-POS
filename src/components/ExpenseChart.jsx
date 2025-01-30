@@ -18,7 +18,9 @@ const COLORS = [
   "#ff7300",
 ];
 
+// eslint-disable-next-line react/prop-types
 function ExpenseChart({ expenses }) {
+  // eslint-disable-next-line react/prop-types
   const data = expenses.reduce((acc, expense) => {
     const existingCategory = acc.find((item) => item.name === expense.category);
     if (existingCategory) {
