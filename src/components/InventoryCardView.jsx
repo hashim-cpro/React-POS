@@ -2,27 +2,10 @@ import { useSelector } from "react-redux";
 import PropTypes from "prop-types";
 import { formatPrice } from "../utils/priceFormatters";
 
-function InventoryCardView({ onEdit = () => {}, searchTerm = "" }) {
-  const { products } = useSelector((state) => state.inventory);
-
-  const filteredProducts = products.filter(
-    (product) =>
-      product.name.toLowerCase().includes(searchTerm?.toLowerCase() || "") ||
-      product.sku.toLowerCase().includes(searchTerm?.toLowerCase() || "") ||
-      product.category.toLowerCase().includes(searchTerm?.toLowerCase() || "")
-  );
-
-  const getStockStatus = (product) => {
-    const { quantity, minStockLevel = 5 } = product;
-    if (quantity <= 0) return { color: "red", text: "Out of Stock" };
-    if (quantity <= minStockLevel)
-      return { color: "yellow", text: "Low Stock" };
-    return { color: "green", text: "In Stock" };
-  };
-
+function InventoryCardView({ onEdit = () => {}, products }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {filteredProducts.map((product) => {
+      {products.map((product) => {
         const stockStatus = getStockStatus(product);
         const retailPrice = product.retailPrice || 0;
         const wholesalePrice = product.wholesalePrice || 0;
@@ -94,7 +77,7 @@ function InventoryCardView({ onEdit = () => {}, searchTerm = "" }) {
           </div>
         );
       })}
-      {filteredProducts.length === 0 && (
+      {products.length === 0 && (
         <div className="col-span-full text-center py-8 text-gray-500">
           No products found
         </div>
@@ -103,9 +86,16 @@ function InventoryCardView({ onEdit = () => {}, searchTerm = "" }) {
   );
 }
 
+const getStockStatus = (product) => {
+  const { quantity, minStockLevel = 5 } = product;
+  if (quantity <= 0) return { color: "red", text: "Out of Stock" };
+  if (quantity <= minStockLevel) return { color: "yellow", text: "Low Stock" };
+  return { color: "green", text: "In Stock" };
+};
+
 InventoryCardView.propTypes = {
   onEdit: PropTypes.func.isRequired,
-  searchTerm: PropTypes.string,
+  products: PropTypes.array.isRequired,
 };
 
 export default InventoryCardView;

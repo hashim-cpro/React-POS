@@ -6,6 +6,7 @@ import ProductModal from "../components/ProductModal";
 import ExcelImportModal from "../components/ExcelImportModal";
 import InventoryTable from "../components/InventoryTable";
 import InventoryCardView from "../components/InventoryCardView";
+import InventoryFilters from "../components/InventoryFilters";
 
 function Inventory() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -13,12 +14,89 @@ function Inventory() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [viewMode, setViewMode] = useState("card");
+  const [filters, setFilters] = useState({
+    category: "",
+    stockStatus: "all",
+    minPrice: "",
+    maxPrice: "",
+  });
+  const [sortConfig, setSortConfig] = useState({
+    field: "name",
+    direction: "asc",
+  });
   const { loading, products } = useSelector((state) => state.inventory);
 
   const handleEdit = (product) => {
     setEditingProduct(product);
     setIsModalOpen(true);
   };
+
+  const filterProducts = (products) => {
+    return products.filter((product) => {
+      // Search term filter
+      const matchesSearch =
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.category.toLowerCase().includes(searchTerm.toLowerCase());
+
+      // Category filter
+      const matchesCategory =
+        !filters.category || product.category === filters.category;
+
+      // Stock status filter
+      let matchesStockStatus = true;
+      if (filters.stockStatus !== "all") {
+        const minStock = product.minStockLevel || 5;
+        switch (filters.stockStatus) {
+          case "inStock":
+            matchesStockStatus = product.quantity > minStock;
+            break;
+          case "lowStock":
+            matchesStockStatus =
+              product.quantity > 0 && product.quantity <= minStock;
+            break;
+          case "outOfStock":
+            matchesStockStatus = product.quantity === 0;
+            break;
+        }
+      }
+
+      // Price range filter
+      const matchesPrice =
+        (!filters.minPrice ||
+          product.retailPrice >= Number(filters.minPrice)) &&
+        (!filters.maxPrice || product.retailPrice <= Number(filters.maxPrice));
+
+      return (
+        matchesSearch && matchesCategory && matchesStockStatus && matchesPrice
+      );
+    });
+  };
+
+  const sortProducts = (products) => {
+    return [...products].sort((a, b) => {
+      let comparison = 0;
+      switch (sortConfig.field) {
+        case "name":
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case "retailPrice":
+          comparison = a.retailPrice - b.retailPrice;
+          break;
+        case "quantity":
+          comparison = a.quantity - b.quantity;
+          break;
+        case "category":
+          comparison = a.category.localeCompare(b.category);
+          break;
+        default:
+          comparison = 0;
+      }
+      return sortConfig.direction === "asc" ? comparison : -comparison;
+    });
+  };
+
+  const filteredAndSortedProducts = sortProducts(filterProducts(products));
 
   const exportToExcel = () => {
     const data = products.map((product) => ({
@@ -80,43 +158,58 @@ function Inventory() {
 
       <div className="bg-white rounded-lg shadow">
         <div className="p-4 border-b">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <input
-              type="text"
-              placeholder="Search products..."
-              className="input flex-grow"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <div className="flex gap-2">
-              <button
-                className={`btn ${
-                  viewMode === "table" ? "btn-primary" : "btn-secondary"
-                }`}
-                onClick={() => setViewMode("table")}
-                title="Table view"
-              >
-                <Bars4Icon className="h-5 w-5" />
-              </button>
-              <button
-                className={`btn ${
-                  viewMode === "card" ? "btn-primary" : "btn-secondary"
-                }`}
-                onClick={() => setViewMode("card")}
-                title="Card view"
-              >
-                <Squares2X2Icon className="h-5 w-5" />
-              </button>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <input
+                type="text"
+                placeholder="Search products..."
+                className="input flex-grow"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <div className="flex gap-2">
+                <button
+                  className={`btn ${
+                    viewMode === "table" ? "btn-primary" : "btn-secondary"
+                  }`}
+                  onClick={() => setViewMode("table")}
+                  title="Table view"
+                >
+                  <Bars4Icon className="h-5 w-5" />
+                </button>
+                <button
+                  className={`btn ${
+                    viewMode === "card" ? "btn-primary" : "btn-secondary"
+                  }`}
+                  onClick={() => setViewMode("card")}
+                  title="Card view"
+                >
+                  <Squares2X2Icon className="h-5 w-5" />
+                </button>
+              </div>
             </div>
+
+            <InventoryFilters
+              onFilterChange={setFilters}
+              onSortChange={setSortConfig}
+            />
           </div>
         </div>
         <div className="p-4">
           {loading ? (
             <p className="text-center py-4">Loading...</p>
           ) : viewMode === "table" ? (
-            <InventoryTable onEdit={handleEdit} searchTerm={searchTerm} />
+            <InventoryTable
+              onEdit={handleEdit}
+              searchTerm={searchTerm}
+              products={filteredAndSortedProducts}
+            />
           ) : (
-            <InventoryCardView onEdit={handleEdit} searchTerm={searchTerm} />
+            <InventoryCardView
+              onEdit={handleEdit}
+              searchTerm={searchTerm}
+              products={filteredAndSortedProducts}
+            />
           )}
         </div>
       </div>
