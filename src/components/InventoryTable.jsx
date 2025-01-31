@@ -12,7 +12,7 @@ import {
   useSort,
   HeaderCellSort,
 } from "@table-library/react-table-library/sort";
-
+import placeholderImg from "../assets/placeholder-img.svg";
 import { ArrowsUpDownIcon } from "@heroicons/react/24/outline";
 import { formatPrice } from "../utils/priceFormatters";
 
