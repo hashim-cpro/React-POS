@@ -1,7 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  settings: {},
+  settings: {
+    theme: "system", // 'light', 'dark', or 'system'
+  },
   profilePictureUrl: "",
 };
 
@@ -11,16 +13,16 @@ const userSlice = createSlice({
   reducers: {
     updateSettings: (state, action) => {
       state.settings = {
-        ...state.settings, // Merge existing settings
-        ...action.payload, // Apply the new settings
+        ...state.settings,
+        ...action.payload,
       };
     },
     updateProfilePictureUrl: (state, action) => {
-      state.profilePictureUrl = action.payload; // Set the new profile picture URL
+      state.profilePictureUrl = action.payload;
     },
     resetUserState: (state) => {
-      state.settings = {}; // Reset settings to an empty object
-      state.profilePictureUrl = ""; // Reset profilePictureUrl to an empty string
+      state.settings = { theme: "system" };
+      state.profilePictureUrl = "";
     },
   },
 });
