@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   settings: {
-    theme: "system", // 'light', 'dark', or 'system'
+    theme: "light", // 'light', 'dark', or 'system'
   },
   profilePictureUrl: "",
 };
