@@ -16,7 +16,7 @@
     "@heroicons/react": "^2.1.5",
     "@reduxjs/toolkit": "^2.8.2",
     "@table-library/react-table-library": "^4.1.7",
-    "@vercel/analytics": "^1.4.1",
+    "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
     "appwrite": "^14.0.1",
     "browser-image-compression": "^2.0.2",
