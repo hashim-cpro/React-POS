@@ -178,9 +178,11 @@ function Sales() {
           </div>
         </div>
         <div className="space-y-4">
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-bg-secondary rounded-lg shadow p-4">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Current Cart</h2>
+              <h2 className="text-xl font-bold text-text-primary">
+                Current Cart
+              </h2>
               {cartItems.length > 0 && (
                 <button
                   className="btn btn-secondary text-sm"

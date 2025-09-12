@@ -1,6 +1,31 @@
 # React POS System 🛒💻
 
 This is a React-based **POS (Point of Sale)** system that took me hell lot of time to make. It's a modern, full-featured POS that won't make you want to throw your computer out the window... most of the time. 😅
+
+## To Do
+
+[] Fix the database schema with sub-collections
+[] Figure out a way for multiple users collaborating
+[] Fix when the State is updated and how it is updated(maybe real time reactive database)
+[] Fix the Design
+[] Fix Dark Mode
+[] Offer offline functionality
+[] Make the Electron App
+[] Host Appwrite locally
+[] Add Settings
+[] Figure out a way to set up organization
+[] Add organization Hierarchy (admin, user, employee etc etc...)
+
+## Appwrite DataBase Schema
+
+- users > document (userid, data)
+- inventory > document (userid, data)
+- sales > document (userid, data)
+- purchases > document (userid, data)
+- expenses > document (userid, data)
+
+okay this is a exsisting project that i started during high seas but it has some major problems. One of the main problem is how frontend handles and updates data in our appwrite database. Sometimes if the state isn't updated properly or there is a network glictch or something like that, the whole data is overridden to default placeholders in the database(i am still nor sure what exactly causes this, I have tried to replicate this a couple of times but it happens very unpredictabally, i guess the result of less architecture planning initially and vibe coding) Also the database schema is too simple, I started with a very simple approach of storing everything in one document as a JSON blob. But it soon became \clear that this approach was not scalable and had many limitations. For the time being I have to fix this and I also wanna do alot of other changes as well listed here:
+
 ![Image](https://cloud-d37m60xud-hack-club-bot.vercel.app/0image.png)
 ![Image](https://cloud-d37m60xud-hack-club-bot.vercel.app/1image.png)
 

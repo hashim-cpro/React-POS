@@ -156,8 +156,8 @@ function Inventory() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-4 border-b">
+      <div className="bg-bg-secondary rounded-lg shadow">
+        <div className="p-4 border-b border-border-color">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col sm:flex-row gap-4">
               <input

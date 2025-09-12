@@ -24,20 +24,20 @@ function CartItem({
   );
 
   return (
-    <div className="p-3 border rounded">
+    <div className="p-3 border border-border-color rounded bg-bg-secondary">
       <div className="flex justify-between mb-2">
         <div className="flex-1">
-          <p className="font-medium">{item.name}</p>
-          <p className="text-sm text-gray-600">
+          <p className="font-medium text-text-primary">{item.name}</p>
+          <p className="text-sm text-text-secondary">
             ${formatPrice(price)} x {item.quantity}
           </p>
           {item.discount > 0 && (
-            <p className="text-sm text-green-600">
+            <p className="text-sm text-success">
               Discount: {item.discount}% ($
               {formatPrice(price - discountedPrice)})
             </p>
           )}
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-text-tertiary">
             Profit Margin: {formatPrice(profitMargin)}%
           </p>
         </div>
