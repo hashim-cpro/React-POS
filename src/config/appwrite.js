@@ -1,8 +1,25 @@
 import { Client, Account, Storage, Databases, ID, Query } from "appwrite";
 
-const client = new Client()
-  .setEndpoint(import.meta.env.VITE_APPWRITE_ENDPOINT)
-  .setProject(import.meta.env.VITE_APPWRITE_PROJECT_ID);
+// Read and validate required environment variables up front
+const APPWRITE_ENDPOINT = import.meta.env.VITE_APPWRITE_ENDPOINT;
+const APPWRITE_PROJECT_ID = import.meta.env.VITE_APPWRITE_PROJECT_ID;
+const APPWRITE_DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
+
+if (!APPWRITE_ENDPOINT || !APPWRITE_PROJECT_ID) {
+  console.error(
+    "Appwrite configuration is missing. Ensure VITE_APPWRITE_ENDPOINT and VITE_APPWRITE_PROJECT_ID are set in your .env file."
+  );
+}
+
+const client = new Client();
+
+// Avoid calling setEndpoint/setProject with undefined to prevent runtime errors
+if (typeof APPWRITE_ENDPOINT === "string" && APPWRITE_ENDPOINT.trim()) {
+  client.setEndpoint(APPWRITE_ENDPOINT);
+}
+if (typeof APPWRITE_PROJECT_ID === "string" && APPWRITE_PROJECT_ID.trim()) {
+  client.setProject(APPWRITE_PROJECT_ID);
+}
 
 export const account = new Account(client);
 export const databases = new Databases(client);
@@ -129,10 +146,16 @@ export const getCurrentUser = async () => {
 
 export const createDocument = async (collectionId, data, userId) => {
   if (!collectionId || !userId) return null;
+  if (!APPWRITE_DATABASE_ID) {
+    console.error(
+      "Appwrite database ID is missing. Set VITE_APPWRITE_DATABASE_ID in your .env file."
+    );
+    return null;
+  }
 
   try {
     return await databases.createDocument(
-      import.meta.env.VITE_APPWRITE_DATABASE_ID,
+      APPWRITE_DATABASE_ID,
       collectionId,
       "unique()",
       {
@@ -148,10 +171,16 @@ export const createDocument = async (collectionId, data, userId) => {
 
 export const updateDocument = async (collectionId, documentId, data) => {
   if (!collectionId || !documentId) return null;
+  if (!APPWRITE_DATABASE_ID) {
+    console.error(
+      "Appwrite database ID is missing. Set VITE_APPWRITE_DATABASE_ID in your .env file."
+    );
+    return null;
+  }
 
   try {
     return await databases.updateDocument(
-      import.meta.env.VITE_APPWRITE_DATABASE_ID,
+      APPWRITE_DATABASE_ID,
       collectionId,
       documentId,
       {
@@ -166,10 +195,16 @@ export const updateDocument = async (collectionId, documentId, data) => {
 
 export const getDocuments = async (collectionId, userId) => {
   if (!collectionId || !userId) return [];
+  if (!APPWRITE_DATABASE_ID) {
+    console.error(
+      "Appwrite database ID is missing. Set VITE_APPWRITE_DATABASE_ID in your .env file."
+    );
+    return [];
+  }
 
   try {
     const response = await databases.listDocuments(
-      import.meta.env.VITE_APPWRITE_DATABASE_ID,
+      APPWRITE_DATABASE_ID,
       collectionId,
       [Query.equal("userId", userId)]
     );
