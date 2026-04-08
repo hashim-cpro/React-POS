@@ -49,3 +49,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+
+# Intentionally ignored files
+todo.md
